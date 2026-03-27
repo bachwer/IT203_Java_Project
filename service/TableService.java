@@ -1,0 +1,95 @@
+package service;
+
+import constance.TableStatus;
+import dao.TableDao;
+
+import dao.impl.TableDaoImpl;
+
+import model.Table;
+import util.InputValidator;
+
+import java.util.List;
+
+public class TableService {
+    private final TableDao tableDao = new TableDaoImpl();
+
+
+    public int create(Table table) {
+        try {
+            validate(table);
+            return tableDao.create(table);
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot create table: " + e.getMessage(), e);
+        }
+    }
+
+
+    public void update(Table table) {
+        try {
+            validate(table);
+            if (!tableDao.update(table)) {
+                throw new IllegalArgumentException("Table not found.");
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot update table: " + e.getMessage(), e);
+        }
+    }
+
+    public void delete(int tableId) {
+        try {
+            if (!tableDao.delete(tableId)) {
+                throw new IllegalArgumentException("Table not found.");
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot delete table: " + e.getMessage(), e);
+        }
+    }
+
+    public List<Table> getAll() {
+        try {
+            return tableDao.findAll();
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot get tables: " + e.getMessage(), e);
+        }
+    }
+
+    public List<Table> getAvailable() {
+        try {
+            return tableDao.findAvailable();
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot get available tables: " + e.getMessage(), e);
+        }
+    }
+
+
+    public void markAvailable(int tableId) {
+        try {
+            tableDao.updateStatus(tableId, TableStatus.AVAILABLE.name());
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot update table status: " + e.getMessage(), e);
+        }
+    }
+
+    public void markOccupied(int tableId) {
+        try {
+            tableDao.updateStatus(tableId, TableStatus.OCCUPIED.name());
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot update table status: " + e.getMessage(), e);
+        }
+    }
+
+
+    private void validate(Table table) {
+        if (table == null || !InputValidator.isNotBlank(table.getName())) {
+            throw new IllegalArgumentException("Table name is required.");
+        }
+        if (!InputValidator.isPositiveInt(table.getCapacity())) {
+            throw new IllegalArgumentException("Capacity must be positive.");
+        }
+        if (table.getStatus() == null) {
+            table.setStatus(TableStatus.AVAILABLE);
+        }
+    }
+
+
+}

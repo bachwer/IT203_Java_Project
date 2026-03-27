@@ -1,0 +1,65 @@
+package model;
+
+import constance.MenuItemStatus;
+
+import java.math.BigDecimal;
+
+public class MenuItem {
+    private int id;
+    private BigDecimal price;
+    private String name;
+    private String type;
+    private MenuItemStatus status;
+
+
+    public MenuItem() {
+    }
+
+    public MenuItem(int id, BigDecimal price, String name, String type, MenuItemStatus status) {
+        this.id = id;
+        this.price = price;
+        this.name = name;
+        this.type = type;
+        this.status = status;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public void setStatus(MenuItemStatus status) {
+        this.status = status;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public MenuItemStatus getStatus() {
+        return status;
+    }
+}
