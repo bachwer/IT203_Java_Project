@@ -48,7 +48,7 @@ public class OrderService {
 
     public void addOrderItem(int orderId, int menuItemId, int quantity) {
         try {
-            if (!InputValidator.isPositiveInt(quantity)) {
+            if (InputValidator.isPositiveInt(quantity)) {
                 throw new IllegalArgumentException("Quantity must be positive.");
             }
             Optional<MenuItem> menuItemOpt = menuItemDao.findById(menuItemId);

@@ -14,7 +14,7 @@ public class OrderItemDaoImpl implements OrderItemDao {
     public int create(OrderItem orderItem) throws SQLException {
         String sql = "INSERT INTO orderItem(orderId, menuItemId, quantity, status) value(?,?,?,?)";
 
-        try(Connection connection = DBConnection.connectionDB();
+        try(Connection connection =DBConnection.getInstance().getConnection();
             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
         ){
             ps.setInt(1, orderItem.getOrderId());
@@ -37,7 +37,7 @@ public class OrderItemDaoImpl implements OrderItemDao {
     public List<OrderItem> findByOrderId(int orderId) throws SQLException {
         String sql = "SELECT oi.id, oi.orderId, oi.menuItemId, oi.quantity, oi.status, mi.name FROM orderItem oi JOIN menu_item mi ON oi.menuItemId = mi.id WHERE orderId = ? ORDER BY id";
         List<OrderItem> orderItem = new ArrayList<>();
-        try(Connection connection = DBConnection.connectionDB();
+        try(Connection connection = DBConnection.getInstance().getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)
         ){
             ps.setInt(1, orderId);
@@ -56,7 +56,7 @@ public class OrderItemDaoImpl implements OrderItemDao {
         String sql = "Select  oi.id, oi.orderId, oi.menuItemId, mi.name AS menu_item_name, oi.quantity, oi.status from orderItem oi join menu_item mi  ON oi.menuItemId = mi.id JOIN orders o ON oi.orderId = o.id WHERE o.approved = TRUE AND oi.status <> 'COMPLETED' ORDER BY oi.id";
         List<OrderItem> items = new ArrayList<>();
 
-        try(Connection connection = DBConnection.connectionDB();
+        try(Connection connection = DBConnection.getInstance().getConnection();
             PreparedStatement ps = connection.prepareStatement(sql);
             ResultSet rs = ps.executeQuery()) {
 
@@ -71,7 +71,7 @@ public class OrderItemDaoImpl implements OrderItemDao {
     public boolean updateStatus(int orderItemId, OrderStatusItem status) throws SQLException {
         String sql = "UPDATE orderItem SET status = ? WHERE id = ?";
 
-        try(Connection connection = DBConnection.connectionDB();
+        try(Connection connection =DBConnection.getInstance().getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)
         ){
             ps.setString(1, status.name());
@@ -84,7 +84,7 @@ public class OrderItemDaoImpl implements OrderItemDao {
     @Override
     public boolean removePendingItem(int orderItemId) throws SQLException {
         String sql = "DELETE FROM orderItem WHERE id = ? AND status = 'PENDING'";
-        try (Connection connection = DBConnection.connectionDB();
+        try (Connection connection = DBConnection.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, orderItemId);
             return ps.executeUpdate() > 0;

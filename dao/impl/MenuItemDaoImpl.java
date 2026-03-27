@@ -16,7 +16,7 @@ public class MenuItemDaoImpl implements MenuItemDao {
     @Override
     public int create(MenuItem menuItem) throws SQLException {
         String sql = "INSERT INTO menu_item(name, price, type, status) VALUE(?,?,?,?)";
-        try(Connection connection = DBConnection.connectionDB();
+        try(Connection connection = DBConnection.getInstance().getConnection();
             PreparedStatement ps =connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
         ){
             ps.setString(1, menuItem.getName());
@@ -37,9 +37,9 @@ public class MenuItemDaoImpl implements MenuItemDao {
     public boolean update(MenuItem menuItem) throws SQLException {
         String sql = "UPDATE menu_item SET name = ?, price = ?, type = ?, status = ? WHERE id  = ?";
 
-        try(Connection connection  = DBConnection.connectionDB();
+        try(Connection connection  = DBConnection.getInstance().getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)
-                ){
+        ){
             ps.setString(1, menuItem.getName());
             ps.setBigDecimal(2, menuItem.getPrice());
             ps.setString(3, menuItem.getType());
@@ -53,10 +53,10 @@ public class MenuItemDaoImpl implements MenuItemDao {
     @Override
     public boolean delete(int menuItemId) throws SQLException {
         String sql = "DELETE from menu_item where id = ?";
-        try(Connection connection = DBConnection.connectionDB();
+        try(Connection connection = DBConnection.getInstance().getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)){
-                ps.setInt(1, menuItemId);
-                return ps.executeUpdate() > 0;
+            ps.setInt(1, menuItemId);
+            return ps.executeUpdate() > 0;
         }
     }
 
@@ -64,8 +64,8 @@ public class MenuItemDaoImpl implements MenuItemDao {
     public Optional<MenuItem> findById(int menuItemId) throws SQLException {
         String sql = "SELECT id, name, price, type, status FROM menu_item WHERE id = ?";
 
-        try(Connection connection = DBConnection.connectionDB();
-        PreparedStatement ps =connection.prepareStatement(sql)
+        try(Connection connection = DBConnection.getInstance().getConnection();
+            PreparedStatement ps =connection.prepareStatement(sql)
         ){
             ps.setInt(1, menuItemId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -81,7 +81,7 @@ public class MenuItemDaoImpl implements MenuItemDao {
     public List<MenuItem> findAll() throws SQLException {
         String sql = "SELECT id, name, price, type, status FROM menu_item ORDER BY id";
         List<MenuItem> menuItems = new ArrayList<>();
-        try (Connection connection = DBConnection.connectionDB();
+        try (Connection connection = DBConnection.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
@@ -96,7 +96,7 @@ public class MenuItemDaoImpl implements MenuItemDao {
     public List<MenuItem> searchByName(String name) throws SQLException {
         String sql = "SELECT id, name, price, type, status FROM menu_item WHERE LOWER(name) LIKE LOWER(?) ORDER BY id";
         List<MenuItem> menuItems = new ArrayList<>();
-        try (Connection connection = DBConnection.connectionDB();
+        try (Connection connection = DBConnection.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)){
             ps.setString(1, "%" + name + "%");
 
@@ -115,7 +115,7 @@ public class MenuItemDaoImpl implements MenuItemDao {
     public boolean updateStatus(int menuItemId, MenuItemStatus status) throws SQLException {
         String sql = "UPDATE menu_item SET  status = ? WHERE id  = ?";
 
-        try(Connection connection  = DBConnection.connectionDB();
+        try(Connection connection  =DBConnection.getInstance().getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)
         ){
             ps.setString(1, status.name());

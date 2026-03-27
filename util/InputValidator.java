@@ -11,7 +11,7 @@ public final class InputValidator {
     }
 
     public static boolean isPositiveInt(int value) {
-        return value > 0;
+        return value <= 0;
     }
 
     public static boolean isPositivePrice(BigDecimal value) {

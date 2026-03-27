@@ -15,7 +15,7 @@ public class TableDaoImpl implements TableDao {
     @Override
     public int create(Table table) throws SQLException {
         String sql = "INSERT INTO tableRs(name, capacity, status) VALUES (?, ?, ?)";
-        try (Connection connection = DBConnection.connectionDB();
+        try (Connection connection = DBConnection.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
         ) {
             ps.setString(1, table.getName());
@@ -36,7 +36,7 @@ public class TableDaoImpl implements TableDao {
     @Override
     public boolean update(Table table) throws SQLException {
         String sql = "UPDATE tableRs SET name = ?, capacity = ?, status = ? WHERE id = ?";
-        try (Connection connection = DBConnection.connectionDB();
+        try (Connection connection = DBConnection.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)
         ) {
             ps.setString(1, table.getName());
@@ -51,7 +51,7 @@ public class TableDaoImpl implements TableDao {
     @Override
     public boolean delete(int tableId) throws SQLException {
         String sql = "DELETE FROM tableRs WHERE id = ?";
-        try (Connection connection = DBConnection.connectionDB();
+        try (Connection connection = DBConnection.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)
         ) {
             ps.setInt(1, tableId);
@@ -62,7 +62,7 @@ public class TableDaoImpl implements TableDao {
     @Override
     public Optional<Table> findById(int tableId) throws SQLException {
         String sql = "SELECT * FROM tableRs WHERE id = ?";
-        try (Connection connection = DBConnection.connectionDB();
+        try (Connection connection = DBConnection.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)
         ) {
             ps.setInt(1, tableId);
@@ -82,7 +82,7 @@ public class TableDaoImpl implements TableDao {
         String sql = "SELECT * FROM tableRs";
         List<Table> list = new ArrayList<>();
 
-        try (Connection connection = DBConnection.connectionDB();
+        try (Connection connection = DBConnection.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()
         ) {
@@ -98,7 +98,7 @@ public class TableDaoImpl implements TableDao {
         String sql = "SELECT * FROM tableRs WHERE status = 'AVAILABLE'";
         List<Table> list = new ArrayList<>();
 
-        try (Connection connection = DBConnection.connectionDB();
+        try (Connection connection = DBConnection.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()
         ) {
@@ -112,7 +112,7 @@ public class TableDaoImpl implements TableDao {
     @Override
     public boolean updateStatus(int tableId, String status) throws SQLException {
         String sql = "UPDATE tableRs SET status = ? WHERE id = ?";
-        try (Connection connection = DBConnection.connectionDB();
+        try (Connection connection = DBConnection.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)
         ) {
             ps.setString(1, status);

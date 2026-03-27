@@ -16,7 +16,7 @@ public class OrderDaoImpl implements OrderDao {
     public int create(Order order) throws SQLException {
         String sql = "INSERT into orders(userId, tableId, status, approved) values (?,?,?,?)";
 
-        try(Connection connection = DBConnection.connectionDB();
+        try(Connection connection = DBConnection.getInstance().getConnection();
             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
         ){
             ps.setInt(1, order.getUserId());
@@ -40,7 +40,7 @@ public class OrderDaoImpl implements OrderDao {
     public Optional<Order> findById(int orderId) throws SQLException {
         String sql = "SELECT id, user_id, table_id, status, approved, createdAt FROM orders WHERE id = ?";
 
-        try(Connection connection = DBConnection.connectionDB();
+        try(Connection connection =DBConnection.getInstance().getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)
 
         ){
@@ -67,7 +67,7 @@ public class OrderDaoImpl implements OrderDao {
         String sql = "SELECT id, userId, tableId, status, approved, createdAt FROM orders WHERE userId = ? ORDER BY id DESC";
 
         List<Order> orders = new ArrayList<>();
-        try(Connection connection = DBConnection.connectionDB();
+        try(Connection connection =DBConnection.getInstance().getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)
         ){
             ps.setInt(1, userId);
@@ -86,7 +86,7 @@ public class OrderDaoImpl implements OrderDao {
         String sql = "SELECT id, userId, tableId, status, approved, createdAt FROM orders ORDER BY id DESC";
 
         List<Order> orders = new ArrayList<>();
-        try (Connection connection = DBConnection.connectionDB();
+        try (Connection connection = DBConnection.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
@@ -99,7 +99,7 @@ public class OrderDaoImpl implements OrderDao {
     @Override
     public boolean updateStatus(int orderId, OrderStatus status) throws SQLException {
         String sql = "UPDATE orders SET status = ? WHERE id = ?";
-        try (Connection connection = DBConnection.connectionDB();
+        try (Connection connection = DBConnection.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, status.name());
             ps.setInt(2, orderId);
@@ -110,7 +110,7 @@ public class OrderDaoImpl implements OrderDao {
     @Override
     public boolean updateApproval(int orderId, boolean approved) throws SQLException {
         String sql = "UPDATE orders SET approved = ? WHERE id = ?";
-        try (Connection connection = DBConnection.connectionDB();
+        try (Connection connection = DBConnection.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setBoolean(1, approved);
             ps.setInt(2, orderId);

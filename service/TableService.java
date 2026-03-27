@@ -83,7 +83,7 @@ public class TableService {
         if (table == null || !InputValidator.isNotBlank(table.getName())) {
             throw new IllegalArgumentException("Table name is required.");
         }
-        if (!InputValidator.isPositiveInt(table.getCapacity())) {
+        if (InputValidator.isPositiveInt(table.getCapacity())) {
             throw new IllegalArgumentException("Capacity must be positive.");
         }
         if (table.getStatus() == null) {

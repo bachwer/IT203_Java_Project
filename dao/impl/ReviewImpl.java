@@ -12,7 +12,7 @@ public class ReviewImpl implements ReviewDao {
     @Override
     public int create(Review review) throws SQLException {
         String sql = "INSERT INTO review(userId, rating, comment) value(?,?,?)";
-        try(Connection connection = DBConnection.connectionDB();
+        try(Connection connection = DBConnection.getInstance().getConnection();
             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
         ){
             ps.setInt(1, review.getUserId());
@@ -34,7 +34,7 @@ public class ReviewImpl implements ReviewDao {
         String sql = "SELECT id, userId, rating, comment, createdAt from review  ORDER BY createdAt DESC";
 
         List<Review> review = new ArrayList<>();
-        try(Connection connection = DBConnection.connectionDB();
+        try(Connection connection = DBConnection.getInstance().getConnection();
             PreparedStatement ps = connection.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()
         ){

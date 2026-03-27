@@ -17,7 +17,7 @@ public class UserDaoImpl implements UserDao {
     @Override
     public int create(User user) throws SQLException {
         String sql = "INSERT into users(name, password, role, status) value(?, ?, ? , ?)";
-        try (Connection connection = DBConnection.connectionDB();
+        try (Connection connection = DBConnection.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)
         ) {
 
@@ -41,7 +41,7 @@ public class UserDaoImpl implements UserDao {
     @Override
     public Optional<User> findById(int id) throws SQLException {
         String sql = "SELECT id, name, password, role, status FROM users WHERE id = ?";
-        try (Connection connection = DBConnection.connectionDB();
+        try (Connection connection = DBConnection.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)
         ) {
             ps.setInt(1, id);
@@ -59,7 +59,7 @@ public class UserDaoImpl implements UserDao {
     @Override
     public Optional<User> findByUsername(String username) throws SQLException {
         String sql = "SELECT id, name, password, role, status FROM users WHERE name = ?";
-        try (Connection connection = DBConnection.connectionDB();
+        try (Connection connection = DBConnection.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, username);
@@ -76,7 +76,7 @@ public class UserDaoImpl implements UserDao {
     @Override
     public boolean updateStatus(int userId, String status) throws SQLException {
         String sql = "UPDATE users SET status = ? WHERE id = ?";
-        try (Connection connection = DBConnection.connectionDB();
+        try (Connection connection = DBConnection.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, status);
@@ -91,7 +91,7 @@ public class UserDaoImpl implements UserDao {
         String sql = "SELECT id, name, password, role, status FROM users WHERE role = ?";
         List<User> users = new java.util.ArrayList<>();
 
-        try (Connection connection = DBConnection.connectionDB();
+        try (Connection connection = DBConnection.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, role.name());
