@@ -12,4 +12,5 @@ public class PasswordHasher {
     public static boolean verify(String rawPassword, String hashedPassword) {
         return BCrypt.checkpw(rawPassword, hashedPassword);
     }
+
 }

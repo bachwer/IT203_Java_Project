@@ -19,10 +19,11 @@ public class OrderItemDaoImpl implements OrderItemDao {
         ){
             ps.setInt(1, orderItem.getOrderId());
             ps.setInt(2, orderItem.getMenuItemId());
-            ps.setInt(4, orderItem.getQuantity());
-            ps.setString(5, orderItem.getStatus().name());
+            ps.setInt(3, orderItem.getQuantity());
+            ps.setString(4, orderItem.getStatus().name());
 
-            try(ResultSet rs = ps.executeQuery()){
+            ps.executeUpdate();
+            try(ResultSet rs = ps.getGeneratedKeys()){
                 if(rs.next()){
                     return rs.getInt(1);
                 }
@@ -52,7 +53,7 @@ public class OrderItemDaoImpl implements OrderItemDao {
 
     @Override
     public List<OrderItem> findIncomingForChef() throws SQLException {
-        String sql = "Select  oi.id, oi.orderId, oi.menuItemId, mi.name AS menu_item_name, oi.quantity, oi.status from orderItem oi join menu_item mi  ON oi.id = mi.id JOIN orders o ON oi.orderId = o.id WHERE o.approved = TRUE AND oi.status <> 'SERVED' ORDER BY oi.id";
+        String sql = "Select  oi.id, oi.orderId, oi.menuItemId, mi.name AS menu_item_name, oi.quantity, oi.status from orderItem oi join menu_item mi  ON oi.menuItemId = mi.id JOIN orders o ON oi.orderId = o.id WHERE o.approved = TRUE AND oi.status <> 'COMPLETED' ORDER BY oi.id";
         List<OrderItem> items = new ArrayList<>();
 
         try(Connection connection = DBConnection.connectionDB();
@@ -68,13 +69,13 @@ public class OrderItemDaoImpl implements OrderItemDao {
 
     @Override
     public boolean updateStatus(int orderItemId, OrderStatusItem status) throws SQLException {
-        String sql = "DELETE FROM orderItem WHERE id = ? AND status = ?";
+        String sql = "UPDATE orderItem SET status = ? WHERE id = ?";
 
         try(Connection connection = DBConnection.connectionDB();
             PreparedStatement ps = connection.prepareStatement(sql)
         ){
-            ps.setInt(1, orderItemId);
-            ps.setString(2, status.name());
+            ps.setString(1, status.name());
+            ps.setInt(2, orderItemId);
 
             return ps.executeUpdate() > 0;
         }
@@ -94,8 +95,8 @@ public class OrderItemDaoImpl implements OrderItemDao {
     private OrderItem map(ResultSet rs) throws SQLException {
         return new OrderItem(
                 rs.getInt("id"),
-                rs.getInt("order_id"),
-                rs.getInt("menu_item_id"),
+                rs.getInt("orderId"),
+                rs.getInt("menuItemId"),
                 rs.getString("menu_item_name"),
                 rs.getInt("quantity"),
                 OrderStatusItem.valueOf(rs.getString("status"))

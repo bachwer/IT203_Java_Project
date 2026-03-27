@@ -20,7 +20,6 @@ public class OrderItem {
         this.orderId = orderId;
         this.menuItemId = menuItemId;
         this.menuItemName = menuItemName;
-        this.quantity = quantity;
         this.status = status;
     }
 
