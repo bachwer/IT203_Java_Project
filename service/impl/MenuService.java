@@ -7,6 +7,7 @@ import service.MenuInterface;
 import util.InputValidator;
 
 import java.util.List;
+import java.util.Optional;
 
 
 public class MenuService implements MenuInterface {
@@ -42,6 +43,22 @@ public class MenuService implements MenuInterface {
             throw new IllegalStateException("Cannot delete menu item: " + e.getMessage(), e);
         }
     }
+
+    @Override
+    public MenuItem findByIdItem(int id) {
+        try {
+            if (id <= 0) {
+                throw new IllegalArgumentException("Invalid ID.");
+            }
+
+            Optional<MenuItem> item = menuItemDao.findById(id);
+            return item.orElse(null);
+
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot find menu item: " + e.getMessage(), e);
+        }
+    }
+
     @Override
     public List<MenuItem> searchByName(String keyword) {
         try {
@@ -62,14 +79,14 @@ public class MenuService implements MenuInterface {
 
 
     private void validate(MenuItem menuItem) {
-        if (menuItem == null || !InputValidator.isNotBlank(menuItem.getName())) {
+        if (menuItem == null || InputValidator.isNotBlank(menuItem.getName())) {
             throw new IllegalArgumentException("Menu item name is required.");
         }
         if (!InputValidator.isPositivePrice(menuItem.getPrice())) {
             throw new IllegalArgumentException("Price must be positive.");
         }
 
-        if (!InputValidator.isNotBlank(menuItem.getType())) {
+        if (InputValidator.isNotBlank(menuItem.getType())) {
             throw new IllegalArgumentException("Type is required.");
         }
     }

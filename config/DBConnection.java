@@ -3,7 +3,6 @@ package config;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-
 public class DBConnection {
 
     private static final String URL = System.getenv().getOrDefault("DB_URL", "jdbc:mysql://localhost:3306/Restaurant_db");
@@ -11,15 +10,8 @@ public class DBConnection {
     private static final String PASS = System.getenv().getOrDefault("DB_PASS", "12121212");
 
     private static DBConnection instance;
-    private final Connection connection;
 
-    private DBConnection() {
-        try {
-            this.connection = DriverManager.getConnection(URL, USER, PASS);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private DBConnection() {}
 
     public static DBConnection getInstance() {
         if (instance == null) {
@@ -28,7 +20,8 @@ public class DBConnection {
         return instance;
     }
 
-    public Connection getConnection() {
-        return connection;
+    // 🔥 mỗi lần gọi → tạo connection mới
+    public Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(URL, USER, PASS);
     }
 }

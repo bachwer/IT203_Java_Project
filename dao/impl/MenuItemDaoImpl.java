@@ -15,14 +15,13 @@ public class MenuItemDaoImpl implements MenuItemDao {
 
     @Override
     public int create(MenuItem menuItem) throws SQLException {
-        String sql = "INSERT INTO menu_item(name, price, type, status) VALUE(?,?,?,?)";
+        String sql = "INSERT INTO menu_item(name, price, type) VALUE(?,?,?)";
         try(Connection connection = DBConnection.getInstance().getConnection();
             PreparedStatement ps =connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
         ){
             ps.setString(1, menuItem.getName());
             ps.setBigDecimal(2, menuItem.getPrice());
             ps.setString(3, menuItem.getType());
-            ps.setString(4, menuItem.getStatus().name());
 
             ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
@@ -44,7 +43,7 @@ public class MenuItemDaoImpl implements MenuItemDao {
             ps.setBigDecimal(2, menuItem.getPrice());
             ps.setString(3, menuItem.getType());
             ps.setString(4, menuItem.getStatus().name());
-            ps.setInt(4, menuItem.getId());
+            ps.setInt(5, menuItem.getId());
 
             return ps.executeUpdate() > 0;
         }

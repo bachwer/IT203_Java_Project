@@ -6,10 +6,7 @@ import constance.UserStatus;
 import dao.UserDao;
 import model.User;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,7 +15,7 @@ public class UserDaoImpl implements UserDao {
     public int create(User user) throws SQLException {
         String sql = "INSERT into users(name, password, role, status) value(?, ?, ? , ?)";
         try (Connection connection = DBConnection.getInstance().getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)
+             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         ) {
 
             ps.setString(1, user.getUserName());
@@ -112,6 +109,7 @@ public class UserDaoImpl implements UserDao {
         item.setUserName(rs.getString("name"));
         item.setRole(Role.valueOf(rs.getString("role")));
         item.setStatus(UserStatus.valueOf(rs.getString("status")));
+        item.setPassword(rs.getString("password"));
         return item;
     }
 }

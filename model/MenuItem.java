@@ -23,6 +23,19 @@ public class MenuItem {
         this.status = status;
     }
 
+    public MenuItem( String name, BigDecimal price, String type) {
+        this.price = price;
+        this.name = name;
+        this.type = type;
+    }
+
+    public MenuItem(int id, String name, BigDecimal price, String type) {
+        this.id = id;
+        this.price = price;
+        this.name = name;
+        this.type = type;
+    }
+
     public void setId(int id) {
         this.id = id;
     }
@@ -62,4 +75,19 @@ public class MenuItem {
     public MenuItemStatus getStatus() {
         return status;
     }
+
+
+
+    @Override
+    public String toString() {
+        return String.format(
+                "%-5d | %-20s | %-10s | %-10s | %-10s",
+                id,
+                name,
+                price,
+                type,
+                status
+        );
+    }
+
 }

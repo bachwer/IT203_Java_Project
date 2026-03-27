@@ -22,4 +22,6 @@ public interface TableInterface {
     void markOccupied(int tableId);
 
     void validate(Table table);
+
+    Table findByIdTable(int id);
 }

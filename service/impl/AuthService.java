@@ -38,7 +38,6 @@ public class AuthService implements AuthInterface {
             User user = userDao.findByUsername(username.trim())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid username or password."));
 
-
             if (!verify(rawPassword, user.getPassword())) {
                 throw new IllegalArgumentException("Invalid username or password.");
             }
@@ -109,6 +108,4 @@ public class AuthService implements AuthInterface {
             throw new IllegalArgumentException("Password must not be empty.");
         }
     }
-
-
 }

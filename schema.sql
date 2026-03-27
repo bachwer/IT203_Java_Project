@@ -26,6 +26,7 @@ create table users (
     status enum('ACTIVE','DISABLE') not null DEFAULT 'ACTIVE'
 
 );
+insert users(name, password, role) value('admin', '$2a$10$3f2.e61.HJDDjKZyYWGCvevWj3.QnmAIPMyXdpK3iHGouReUpG5Ka', 'MANAGER');
 
 create table orders (
     id int primary key auto_increment,
@@ -60,8 +61,9 @@ create table tableRs
     id int primary key auto_increment,
     name varchar(200) not null,
     capacity int not null,
-    status enum('AVAILABLE', 'OCCUPIED')
+    status enum('AVAILABLE', 'OCCUPIED') not null default 'AVAILABLE'
 );
+
 
 UPDATE tableRs SET name = ?, capacity = ?, status = ? WHERE id = ?;
 
@@ -85,3 +87,5 @@ ORDER BY id;
 Select  oi.id, oi.orderId, oi.menuItemId, mi.name AS menu_item_name, oi.quantity, oi.status
     from orderItem oi join menu_item mi  ON oi.id = mi.id JOIN orders o ON oi.orderId = o.id
 WHERE o.approved = TRUE AND oi.status <> 'SERVED' ORDER BY oi.id;
+
+

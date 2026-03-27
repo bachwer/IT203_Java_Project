@@ -59,5 +59,11 @@ public class Review {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
+    @Override
+    public String toString() {
+        return String.format("| %-4d | %-6d | %-2d | %-20s | %-20s |",
+                id, userId, rating, comment, createdAt);
+    }
+
 }
 

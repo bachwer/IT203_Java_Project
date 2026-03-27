@@ -11,6 +11,8 @@ public interface MenuInterface {
 
     void delete(int menuItemId);
 
+    MenuItem findByIdItem(int id);
+
     List<MenuItem> searchByName(String keyword);
 
     List<MenuItem> getAll();

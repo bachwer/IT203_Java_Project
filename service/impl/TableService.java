@@ -3,11 +3,13 @@ package service.impl;
 import constance.TableStatus;
 import dao.TableDao;
 import dao.impl.TableDaoImpl;
+import model.MenuItem;
 import model.Table;
 import service.TableInterface;
 import util.InputValidator;
 
 import java.util.List;
+import java.util.Optional;
 
 public class TableService implements TableInterface {
     private final TableDao tableDao = new TableDaoImpl();
@@ -41,6 +43,19 @@ public class TableService implements TableInterface {
             }
         } catch (Exception e) {
             throw new IllegalStateException("Cannot delete table: " + e.getMessage(), e);
+        }
+    }
+    @Override
+    public Table findByIdTable(int id) {
+        try {
+            if (id <= 0) {
+                throw new IllegalArgumentException("Invalid ID.");
+            }
+            Optional<Table> item = tableDao.findById(id);
+            return item.orElse(null);
+
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot find table: " + e.getMessage(), e);
         }
     }
     @Override
@@ -79,7 +94,7 @@ public class TableService implements TableInterface {
 
     @Override
     public void validate(Table table) {
-        if (table == null || !InputValidator.isNotBlank(table.getName())) {
+        if (table == null || InputValidator.isNotBlank(table.getName())) {
             throw new IllegalArgumentException("Table name is required.");
         }
         if (InputValidator.isPositiveInt(table.getCapacity())) {
