@@ -1,15 +1,18 @@
-package service;
+package service.impl;
 
 import dao.ReviewDao;
 import dao.impl.ReviewImpl;
 import model.Review;
+import service.ReviewInterface;
 import util.InputValidator;
 
 import java.util.List;
 
-public class ReviewService {
+public class ReviewService implements ReviewInterface {
     private final ReviewDao reviewDao = new ReviewImpl();
 
+
+    @Override
     public void addReview(int userId, int rating, String comment) {
 
         try {
@@ -25,6 +28,7 @@ public class ReviewService {
 
     }
 
+    @Override
     public List<Review> getAllReviews() {
         try {
             return reviewDao.findAll();

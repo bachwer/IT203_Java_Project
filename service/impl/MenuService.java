@@ -1,16 +1,17 @@
-package service;
+package service.impl;
 
 import dao.MenuItemDao;
 import dao.impl.MenuItemDaoImpl;
 import model.MenuItem;
+import service.MenuInterface;
 import util.InputValidator;
 
 import java.util.List;
 
 
-public class MenuService {
+public class MenuService implements MenuInterface {
     private final MenuItemDao menuItemDao = new MenuItemDaoImpl();
-
+    @Override
     public int create(MenuItem menuItem){
         try{
             validate(menuItem);
@@ -20,7 +21,7 @@ public class MenuService {
         }
     }
 
-
+    @Override
     public void update(MenuItem menuItem){
         try {
             validate(menuItem);
@@ -31,7 +32,7 @@ public class MenuService {
             throw new IllegalStateException("Cannot update menu item: " + e.getMessage(), e);
         }
     }
-
+    @Override
     public void delete(int menuItemId) {
         try {
             if (!menuItemDao.delete(menuItemId)) {
@@ -41,7 +42,7 @@ public class MenuService {
             throw new IllegalStateException("Cannot delete menu item: " + e.getMessage(), e);
         }
     }
-
+    @Override
     public List<MenuItem> searchByName(String keyword) {
         try {
             return menuItemDao.searchByName(keyword == null ? "" : keyword.trim());
@@ -49,7 +50,7 @@ public class MenuService {
             throw new IllegalStateException("Cannot search menu: " + e.getMessage(), e);
         }
     }
-
+    @Override
     public List<MenuItem> getAll() {
         try {
             return menuItemDao.findAll();

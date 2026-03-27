@@ -1,19 +1,18 @@
-package service;
+package service.impl;
 
 import constance.TableStatus;
 import dao.TableDao;
-
 import dao.impl.TableDaoImpl;
-
 import model.Table;
+import service.TableInterface;
 import util.InputValidator;
 
 import java.util.List;
 
-public class TableService {
+public class TableService implements TableInterface {
     private final TableDao tableDao = new TableDaoImpl();
 
-
+    @Override
     public int create(Table table) {
         try {
             validate(table);
@@ -23,7 +22,7 @@ public class TableService {
         }
     }
 
-
+    @Override
     public void update(Table table) {
         try {
             validate(table);
@@ -34,7 +33,7 @@ public class TableService {
             throw new IllegalStateException("Cannot update table: " + e.getMessage(), e);
         }
     }
-
+    @Override
     public void delete(int tableId) {
         try {
             if (!tableDao.delete(tableId)) {
@@ -44,7 +43,7 @@ public class TableService {
             throw new IllegalStateException("Cannot delete table: " + e.getMessage(), e);
         }
     }
-
+    @Override
     public List<Table> getAll() {
         try {
             return tableDao.findAll();
@@ -52,7 +51,7 @@ public class TableService {
             throw new IllegalStateException("Cannot get tables: " + e.getMessage(), e);
         }
     }
-
+    @Override
     public List<Table> getAvailable() {
         try {
             return tableDao.findAvailable();
@@ -61,7 +60,7 @@ public class TableService {
         }
     }
 
-
+    @Override
     public void markAvailable(int tableId) {
         try {
             tableDao.updateStatus(tableId, TableStatus.AVAILABLE.name());
@@ -69,7 +68,7 @@ public class TableService {
             throw new IllegalStateException("Cannot update table status: " + e.getMessage(), e);
         }
     }
-
+    @Override
     public void markOccupied(int tableId) {
         try {
             tableDao.updateStatus(tableId, TableStatus.OCCUPIED.name());
@@ -78,8 +77,8 @@ public class TableService {
         }
     }
 
-
-    private void validate(Table table) {
+    @Override
+    public void validate(Table table) {
         if (table == null || !InputValidator.isNotBlank(table.getName())) {
             throw new IllegalArgumentException("Table name is required.");
         }

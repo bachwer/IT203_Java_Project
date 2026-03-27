@@ -1,10 +1,11 @@
-package service;
+package service.impl;
 
 import constance.Role;
 import constance.UserStatus;
 import dao.UserDao;
 import dao.impl.UserDaoImpl;
 import model.User;
+import service.AuthInterface;
 import util.InputValidator;
 
 import java.sql.SQLException;
@@ -13,22 +14,24 @@ import java.util.List;
 import static util.PasswordHasher.hash;
 import static util.PasswordHasher.verify;
 
-public class AuthService {
+public class AuthService implements AuthInterface {
     private final UserDao userDao = new UserDaoImpl();
 
+    @Override
     public void registerCustomer(String userName, String password){
         try{
             validateCredential(userName, password);
             if(userDao.findByUsername(userName).isPresent()){
                 throw new IllegalArgumentException("Username already exists.");
             }
+
             User user = new User(userName.trim(), hash(password), Role.CUSTOMER, UserStatus.ACTIVE);
             userDao.create(user);
         } catch (SQLException e) {
             throw new IllegalStateException("Cannot register: " + e.getMessage(), e);
         }
     }
-
+    @Override
     public User login(String username, String rawPassword) {
         try {
             validateCredential(username, rawPassword);
@@ -50,15 +53,15 @@ public class AuthService {
             throw new IllegalStateException("Cannot login: " + e.getMessage(), e);
         }
     }
-
+    @Override
     public void createChef(String username, String rawPassword) {
         createInternalUser(username, rawPassword, Role.CHEF);
     }
-
+    @Override
     public void createManager(String username, String rawPassword) {
         createInternalUser(username, rawPassword, Role.MANAGER);
     }
-
+    @Override
     public List<User> getCustomers() {
         try {
             return userDao.findByRole(Role.CUSTOMER);
@@ -66,7 +69,7 @@ public class AuthService {
             throw new IllegalStateException("Cannot get customers: " + e.getMessage(), e);
         }
     }
-
+    @Override
     public List<User> getChefs() {
         try {
             return userDao.findByRole(Role.CHEF);
@@ -74,7 +77,7 @@ public class AuthService {
             throw new IllegalStateException("Cannot get chefs: " + e.getMessage(), e);
         }
     }
-
+    @Override
     public void banUser(int userId) {
         try {
             boolean ok = userDao.updateStatus(userId, UserStatus.DISABLE.name());

@@ -1,4 +1,4 @@
-package service;
+package service.impl;
 
 
 import constance.OrderStatus;
@@ -15,6 +15,7 @@ import dao.impl.TableDaoImpl;
 import model.MenuItem;
 import model.Order;
 import model.OrderItem;
+import service.OrderInterface;
 import util.InputValidator;
 
 import java.time.LocalDateTime;
@@ -22,13 +23,13 @@ import java.util.List;
 import java.util.Optional;
 
 
-public class OrderService {
+public class OrderService implements OrderInterface {
     private final OrderDao orderDao = new OrderDaoImpl();
     private final OrderItemDao orderItemDao = new OrderItemDaoImpl();
     private final MenuItemDao menuItemDao = new MenuItemDaoImpl();
     private final TableDao tableDao = new TableDaoImpl();
 
-
+    @Override
     public int create(int userId, int tableId){
         try {
             if (tableDao.findById(tableId).isEmpty()) {
@@ -45,7 +46,7 @@ public class OrderService {
             throw new IllegalStateException("Cannot create order: " + e.getMessage(), e);
         }
     }
-
+    @Override
     public void addOrderItem(int orderId, int menuItemId, int quantity) {
         try {
             if (InputValidator.isPositiveInt(quantity)) {
@@ -61,7 +62,7 @@ public class OrderService {
             throw new IllegalStateException("Cannot add order item: " + e.getMessage(), e);
         }
     }
-
+    @Override
     public boolean removePendingOrderItem(int orderItemId) {
         try {
             return orderItemDao.removePendingItem(orderItemId);
@@ -69,7 +70,7 @@ public class OrderService {
             throw new IllegalStateException("Cannot remove item: " + e.getMessage(), e);
         }
     }
-
+    @Override
     public List<OrderItem> getOrderItems(int orderId) {
         try {
             return orderItemDao.findByOrderId(orderId);
@@ -77,7 +78,7 @@ public class OrderService {
             throw new IllegalStateException("Cannot get order items: " + e.getMessage(), e);
         }
     }
-
+    @Override
     public List<Order> getOrdersByUser(int userId) {
         try {
             return orderDao.findByUserId(userId);
@@ -86,7 +87,7 @@ public class OrderService {
         }
     }
 
-
+    @Override
     public List<Order> getAllOrders() {
         try {
             return orderDao.findAll();
@@ -94,7 +95,7 @@ public class OrderService {
             throw new IllegalStateException("Cannot get orders: " + e.getMessage(), e);
         }
     }
-
+    @Override
     public void approveOrder(int orderId) {
         try {
             boolean ok = orderDao.updateApproval(orderId, true);
@@ -105,7 +106,7 @@ public class OrderService {
             throw new IllegalStateException("Cannot approve order: " + e.getMessage(), e);
         }
     }
-
+    @Override
     public void advanceOrderItemStatus(int orderItemId, OrderStatusItem nextStatus) {
         try {
             OrderStatusItem current = findOrderItem(orderItemId).getStatus();
@@ -117,7 +118,7 @@ public class OrderService {
             throw new IllegalStateException("Cannot update item status: " + e.getMessage(), e);
         }
     }
-
+    @Override
     public OrderItem findOrderItem(int orderItemId) {
         try {
             for (Order order : orderDao.findAll()) {
@@ -133,6 +134,7 @@ public class OrderService {
             throw new IllegalStateException("Cannot find order item: " + e.getMessage(), e);
         }
     }
+
 
     private boolean isNextStatusValid(OrderStatusItem current, OrderStatusItem next) {
         switch (current) {
