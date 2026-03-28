@@ -78,4 +78,16 @@ public class Order {
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
+    @Override
+    public String toString() {
+        return String.format(
+                "%-5d | %-5d | %-5d | %-10s | %-8s | %s",
+                id,
+                userId,
+                tableId,
+                status,
+                approved,
+                createdAt
+        );
+    }
 }

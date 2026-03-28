@@ -70,4 +70,16 @@ public class OrderItem {
     public OrderStatusItem getStatus() {
         return status;
     }
+    @Override
+    public String toString() {
+        return String.format(
+                "%-5d | %-10d | %-10d | %-20s | %-10d | %-10s",
+                id,
+                orderId,
+                menuItemId,
+                menuItemName,
+                quantity,
+                status
+        );
+    }
 }

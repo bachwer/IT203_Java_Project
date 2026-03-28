@@ -11,7 +11,7 @@ import java.util.List;
 public class ReviewImpl implements ReviewDao {
     @Override
     public int create(Review review) throws SQLException {
-        String sql = "INSERT INTO review(userId, rating, comment) value(?,?,?)";
+        String sql = "INSERT INTO review(userId, rating, comment) VALUES(?,?,?)";
         try(Connection connection = DBConnection.getInstance().getConnection();
             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
         ){
@@ -19,9 +19,13 @@ public class ReviewImpl implements ReviewDao {
             ps.setInt(2, review.getRating());
             ps.setString(3, review.getComment());
 
-            try(ResultSet rs = ps.executeQuery()){
-                if(rs.next()){
-                    return rs.getInt(1);
+            int affectedRows = ps.executeUpdate();
+
+            if (affectedRows > 0) {
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        return rs.getInt(1);
+                    }
                 }
             }
         }

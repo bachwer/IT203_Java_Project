@@ -124,7 +124,7 @@ public class OrderDaoImpl implements OrderDao {
         Order order = new Order();
         order.setId(rs.getInt("id"));
         order.setUserId(rs.getInt("userId"));
-        order.setTableId(rs.getInt("tableIid"));
+        order.setTableId(rs.getInt("tableId"));
         order.setStatus(OrderStatus.valueOf(rs.getString("status")));
         order.setApproved(rs.getBoolean("approved"));
         order.setCreatedAt(createdAt == null ? null : createdAt.toLocalDateTime());

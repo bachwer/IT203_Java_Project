@@ -1,4 +1,3 @@
-
 Create database restaurant_db;
 USE restaurant_db;
 
@@ -34,17 +33,23 @@ create table orders (
     tableId int not null,
     status enum('PENDING', 'COOKING', 'DONE', 'CANCELLED'),
     approved BOOLEAN DEFAULT FALSE,
-    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
-);
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
 
+    FOREIGN KEY (userId) REFERENCES users(id),
+    FOREIGN KEY (tableId) REFERENCES tableRs(id),
+
+    UNIQUE (tableId)
+);
+drop table orders;
 
 create table orderItem(
     id int primary key auto_increment,
     orderId int not null,
     menuItemId int not null,
     quantity int not null,
-    status enum('AVAILABLE', 'DISABLED', 'OUT_OF_STOCK')  not null DEFAULT 'AVAILABLE'
+    status enum('PENDING', 'PROCESSING', 'COMPLETED', 'CANCELLED')  not null DEFAULT 'PENDING'
 );
+
 
 
 create table review(
@@ -63,6 +68,8 @@ create table tableRs
     capacity int not null,
     status enum('AVAILABLE', 'OCCUPIED') not null default 'AVAILABLE'
 );
+
+
 
 
 UPDATE tableRs SET name = ?, capacity = ?, status = ? WHERE id = ?;
@@ -89,3 +96,11 @@ Select  oi.id, oi.orderId, oi.menuItemId, mi.name AS menu_item_name, oi.quantity
 WHERE o.approved = TRUE AND oi.status <> 'SERVED' ORDER BY oi.id;
 
 
+
+
+select * from users;
+
+select * from orders;
+
+select * from tableRs;
+select * from review;
