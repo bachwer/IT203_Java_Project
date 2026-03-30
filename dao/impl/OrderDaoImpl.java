@@ -6,6 +6,7 @@ import constance.OrderStatus;
 import dao.OrderDao;
 import model.Order;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -114,6 +115,43 @@ public class OrderDaoImpl implements OrderDao {
             ps.setInt(2, orderId);
             return ps.executeUpdate() > 0;
         }
+    }
+
+    @Override
+    public boolean updateTotal(int orderId, BigDecimal total) throws SQLException {
+        String sql = "UPDATE orders SET total = ? WHERE id = ?";
+        try (Connection connection = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setBigDecimal(1, total);
+            ps.setInt(2, orderId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    @Override
+    public BigDecimal getTotalRevenue() throws SQLException {
+        String sql = "SELECT COALESCE(SUM(total), 0) AS total_revenue FROM orders WHERE approved = TRUE AND status = 'CheckOuted'";
+        try (Connection connection = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getBigDecimal("total_revenue");
+            }
+        }
+        return BigDecimal.ZERO;
+    }
+
+    @Override
+    public int countCheckedOutOrders() throws SQLException {
+        String sql = "SELECT COUNT(*) AS checked_out_count FROM orders WHERE approved = TRUE AND status = 'CheckOuted'";
+        try (Connection connection = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt("checked_out_count");
+            }
+        }
+        return 0;
     }
 
 

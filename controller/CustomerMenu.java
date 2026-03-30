@@ -122,12 +122,25 @@ public class CustomerMenu {
                     System.out.println("Item added successfully.");
                 }
                 case 4 -> {
+                    var currentOrder = orderService.getCurrentOrderByUser(user.getId());
+                    if (currentOrder.isEmpty()) {
+                        System.out.println("No current order. Please create one first.");
+                        continue;
+                    }
+
                     System.out.print("Enter order item id to remove: ");
                     int orderItemId;
                     try {
                         orderItemId = Integer.parseInt(input.nextLine());
                     } catch (NumberFormatException e) {
                         System.out.println("Invalid input!");
+                        continue;
+                    }
+
+                    boolean belongsToCurrentOrder = orderService.getOrderItems(currentOrder.get().getId()).stream()
+                            .anyMatch(item -> item.getId() == orderItemId);
+                    if (!belongsToCurrentOrder) {
+                        System.out.println("Order item does not belong to your current order.");
                         continue;
                     }
 
@@ -174,11 +187,11 @@ public class CustomerMenu {
                         continue;
                     }
 
-                    boolean hasPendingItem = orderItems.stream()
-                            .anyMatch(item -> item.getStatus() == OrderStatusItem.PENDING);
+                    boolean hasNotReadyItem = orderItems.stream().anyMatch(item ->
+                            item.getStatus() == OrderStatusItem.PENDING || item.getStatus() == OrderStatusItem.PROCESSING);
 
-                    if (hasPendingItem) {
-                        System.out.println("Cannot checkout. Some items are still PENDING.");
+                    if (hasNotReadyItem) {
+                        System.out.println("Cannot checkout. Some items are not completed yet.");
                         continue;
                     }
 
@@ -215,6 +228,7 @@ public class CustomerMenu {
                         continue;
                     }
 
+                    orderService.saveOrderTotal(orderId, totalAmount.setScale(2, RoundingMode.HALF_UP));
                     orderService.approveOrder(orderId);
                     System.out.println("Order approved (checkout successful).");
                 }

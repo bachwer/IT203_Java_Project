@@ -4,6 +4,7 @@ package service.impl;
 import constance.OrderStatus;
 import constance.OrderStatusItem;
 import constance.TableStatus;
+import constance.MenuItemStatus;
 import dao.MenuItemDao;
 import dao.OrderDao;
 import dao.OrderItemDao;
@@ -18,6 +19,7 @@ import model.OrderItem;
 import service.OrderInterface;
 import util.InputValidator;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -73,6 +75,9 @@ public class OrderService implements OrderInterface {
             Optional<MenuItem> menuItemOpt = menuItemDao.findById(menuItemId);
             if (menuItemOpt.isEmpty()) {
                 throw new IllegalArgumentException("Menu item does not exist.");
+            }
+            if (menuItemOpt.get().getStatus() != MenuItemStatus.AVAILABLE) {
+                throw new IllegalArgumentException("Menu item is not available.");
             }
 
             orderItemDao.create(new OrderItem(0, orderId, menuItemId, null, quantity, OrderStatusItem.PENDING));
@@ -138,6 +143,39 @@ public class OrderService implements OrderInterface {
         }
     }
 
+    @Override
+    public void saveOrderTotal(int orderId, BigDecimal total) {
+        try {
+            if (total == null || total.compareTo(BigDecimal.ZERO) < 0) {
+                throw new IllegalArgumentException("Order total is invalid.");
+            }
+
+            if (!orderDao.updateTotal(orderId, total)) {
+                throw new IllegalArgumentException("Order not found.");
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot save order total: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public BigDecimal getTotalRevenue() {
+        try {
+            return orderDao.getTotalRevenue();
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot get total revenue: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public int countCheckedOutOrders() {
+        try {
+            return orderDao.countCheckedOutOrders();
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot count checked out orders: " + e.getMessage(), e);
+        }
+    }
+
 
     @Override
     public void approveOrder(int orderId) {
@@ -147,13 +185,29 @@ public class OrderService implements OrderInterface {
                 throw new IllegalArgumentException("Order not found.");
             }
 
+            Order order = orderOpt.get();
+            if (order.isApproved()) {
+                throw new IllegalArgumentException("Order already checked out.");
+            }
+
+            List<OrderItem> items = orderItemDao.findByOrderId(orderId);
+            if (items.isEmpty()) {
+                throw new IllegalArgumentException("Cannot checkout order without items.");
+            }
+
+            boolean hasNotReadyItem = items.stream().anyMatch(item ->
+                    item.getStatus() == OrderStatusItem.PENDING || item.getStatus() == OrderStatusItem.PROCESSING);
+            if (hasNotReadyItem) {
+                throw new IllegalArgumentException("Cannot checkout. Some items are not completed yet.");
+            }
+
             boolean statusUpdated = orderDao.updateStatus(orderId, OrderStatus.CheckOuted);
             boolean approvedUpdated = orderDao.updateApproval(orderId, true);
             if (!statusUpdated || !approvedUpdated) {
                 throw new IllegalArgumentException("Order not found.");
             }
 
-            tableDao.updateStatus(orderOpt.get().getTableId(), TableStatus.AVAILABLE.name());
+            tableDao.updateStatus(order.getTableId(), TableStatus.AVAILABLE.name());
         } catch (Exception e) {
             throw new IllegalStateException("Cannot approve order: " + e.getMessage(), e);
         }

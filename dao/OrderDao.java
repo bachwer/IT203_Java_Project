@@ -3,6 +3,7 @@ package dao;
 import constance.OrderStatus;
 import model.Order;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -14,4 +15,7 @@ public interface OrderDao {
     List<Order> findAll() throws SQLException;
     boolean updateStatus(int orderId, OrderStatus status) throws SQLException;
     boolean updateApproval(int orderId, boolean approved) throws SQLException;
+    boolean updateTotal(int orderId, BigDecimal total) throws SQLException;
+    BigDecimal getTotalRevenue() throws SQLException;
+    int countCheckedOutOrders() throws SQLException;
 }

@@ -9,6 +9,8 @@ import service.impl.OrderService;
 import service.impl.ReviewService;
 import util.CliTable;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Scanner;
 
@@ -33,6 +35,7 @@ public class ManagerMenu {
             System.out.println("5. Create Chef User");
             System.out.println("6. Ban Customer");
             System.out.println("7. View Reviews");
+            System.out.println("8. View Revenue Report");
             System.out.println("0. Logout");
 
             try {
@@ -113,11 +116,15 @@ public class ManagerMenu {
                             System.out.println("Invalid user ID!");
                             break;
                         }
+                        if (id == user.getId()) {
+                            System.out.println("You cannot ban your own account.");
+                            break;
+                        }
                         try {
                             authService.banUser(id);
                             System.out.println("User has been banned successfully.");
                         } catch (Exception ex) {
-                            System.out.println("Failed to ban user.");
+                            System.out.println("Failed to ban user: " + ex.getMessage());
                         }
                     } catch (NumberFormatException e) {
                         System.out.println("User ID must be a number!");
@@ -134,6 +141,17 @@ public class ManagerMenu {
                     List<String[]> rows = re.stream().map(Review::toTableRow).toList();
                     CliTable.print("CUSTOMER REVIEWS", Review.tableHeaders(), rows);
 
+                }
+                case 8 -> {
+                    int checkedOutOrders = orderService.countCheckedOutOrders();
+                    BigDecimal totalRevenue = orderService.getTotalRevenue().setScale(2, RoundingMode.HALF_UP);
+
+                    List<String[]> rows = new java.util.ArrayList<>();
+                    rows.add(new String[]{
+                            String.valueOf(checkedOutOrders),
+                            totalRevenue.toPlainString()
+                    });
+                    CliTable.print("REVENUE REPORT", new String[]{"Checked Out Orders", "Total Revenue"}, rows);
                 }
                 case 0 -> {
                     return;

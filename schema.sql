@@ -16,10 +16,11 @@ CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(150) NOT NULL,
     password VARCHAR(250) NOT NULL,
     role ENUM('CUSTOMER', 'CHEF', 'MANAGER') NOT NULL DEFAULT 'CUSTOMER',
-    status ENUM('ACTIVE', 'DISABLE') NOT NULL DEFAULT 'ACTIVE'
+    status ENUM('ACTIVE', 'DISABLE') NOT NULL DEFAULT 'ACTIVE',
+    UNIQUE KEY uk_users_name (name)
 );
 
-INSERT INTO users(name, password, role)
+INSERT IGNORE INTO users(name, password, role)
 VALUES ('admin', '$2a$10$3f2.e61.HJDDjKZyYWGCvevWj3.QnmAIPMyXdpK3iHGouReUpG5Ka', 'MANAGER');
 
 CREATE TABLE IF NOT EXISTS tableRs (
@@ -35,10 +36,14 @@ CREATE TABLE IF NOT EXISTS orders (
     tableId INT NOT NULL,
     status ENUM('CheckIn', 'CheckOuted') NOT NULL DEFAULT 'CheckIn',
     approved BOOLEAN DEFAULT FALSE,
+    total DECIMAL(10,2) DEFAULT 0,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (userId) REFERENCES users(id),
     FOREIGN KEY (tableId) REFERENCES tableRs(id)
 );
+
+
+
 
 CREATE TABLE IF NOT EXISTS orderItem (
     id INT PRIMARY KEY AUTO_INCREMENT,

@@ -4,6 +4,7 @@ import constance.OrderStatusItem;
 import model.Order;
 import model.OrderItem;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,6 +24,12 @@ public interface OrderInterface {
     Optional<Order> getCurrentOrderByUser(int userId);
 
     List<Order> getAllOrders();
+
+    void saveOrderTotal(int orderId, BigDecimal total);
+
+    BigDecimal getTotalRevenue();
+
+    int countCheckedOutOrders();
 
     void approveOrder(int orderId);
 

@@ -162,6 +162,10 @@ public class ManagerCRUD {
                             System.out.println("Type must not be empty!");
                             break;
                         }
+                        if (!type.equalsIgnoreCase("FOOD") && !type.equalsIgnoreCase("DRINK")) {
+                            System.out.println("Type must be FOOD or DRINK!");
+                            break;
+                        }
 
                         MenuItem item = new MenuItem();
                         item.setId(oldItem.getId());
@@ -235,12 +239,27 @@ public class ManagerCRUD {
                         break;
                     }
 
+                    System.out.print("Confirm delete (Y/N): ");
+                    String confirm = input.nextLine().trim();
+                    if (!confirm.equalsIgnoreCase("Y")) {
+                        System.out.println("Delete cancelled.");
+                        break;
+                    }
+
                     if (s.equals("MenuItem")) {
-                        menuService.delete(id);
-                        System.out.println("Delete MenuItem success!");
+                        try {
+                            menuService.delete(id);
+                            System.out.println("Delete MenuItem success!");
+                        } catch (IllegalArgumentException | IllegalStateException e) {
+                            System.out.println(resolveErrorMessage(e));
+                        }
                     } else if (s.equals("Table")) {
-                        tableService.delete(id);
-                        System.out.println("Delete Table success!");
+                        try {
+                            tableService.delete(id);
+                            System.out.println("Delete Table success!");
+                        } catch (IllegalArgumentException | IllegalStateException e) {
+                            System.out.println(resolveErrorMessage(e));
+                        }
                     }
                 }
                 case 4 -> {
