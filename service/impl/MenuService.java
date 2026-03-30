@@ -6,6 +6,7 @@ import model.MenuItem;
 import service.MenuInterface;
 import util.InputValidator;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,10 +15,13 @@ public class MenuService implements MenuInterface {
     private final MenuItemDao menuItemDao = new MenuItemDaoImpl();
     @Override
     public int create(MenuItem menuItem){
-        try{
+        try {
             validate(menuItem);
+            if (isDuplicateNameForCreate(menuItem.getName())) {
+                throw new IllegalArgumentException("Menu item name already exists.");
+            }
             return menuItemDao.create(menuItem);
-        }catch (Exception e) {
+        } catch (SQLException e) {
             throw new IllegalStateException("Cannot create menu item: " + e.getMessage(), e);
         }
     }
@@ -26,10 +30,13 @@ public class MenuService implements MenuInterface {
     public void update(MenuItem menuItem){
         try {
             validate(menuItem);
+            if (isDuplicateNameForUpdate(menuItem.getId(), menuItem.getName())) {
+                throw new IllegalArgumentException("Menu item name already exists.");
+            }
             if (!menuItemDao.update(menuItem)) {
                 throw new IllegalArgumentException("Menu item not found.");
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new IllegalStateException("Cannot update menu item: " + e.getMessage(), e);
         }
     }
@@ -89,6 +96,22 @@ public class MenuService implements MenuInterface {
         if (InputValidator.isNotBlank(menuItem.getType())) {
             throw new IllegalArgumentException("Type is required.");
         }
+    }
+
+    private boolean isDuplicateNameForCreate(String name) throws SQLException {
+        String normalized = normalizeName(name);
+        return menuItemDao.findAll().stream()
+                .anyMatch(item -> normalizeName(item.getName()).equalsIgnoreCase(normalized));
+    }
+
+    private boolean isDuplicateNameForUpdate(int id, String name) throws SQLException {
+        String normalized = normalizeName(name);
+        return menuItemDao.findAll().stream()
+                .anyMatch(item -> item.getId() != id && normalizeName(item.getName()).equalsIgnoreCase(normalized));
+    }
+
+    private String normalizeName(String value) {
+        return value == null ? "" : value.trim();
     }
 
 }

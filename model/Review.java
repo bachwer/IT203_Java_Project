@@ -59,6 +59,21 @@ public class Review {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
+
+    public static String[] tableHeaders() {
+        return new String[]{"ID", "User ID", "Rating", "Comment", "Created At"};
+    }
+
+    public String[] toTableRow() {
+        return new String[]{
+                String.valueOf(id),
+                String.valueOf(userId),
+                String.valueOf(rating),
+                comment,
+                createdAt == null ? "" : createdAt.toString()
+        };
+    }
+
     @Override
     public String toString() {
         return String.format("| %-4d | %-6d | %-2d | %-20s | %-20s |",

@@ -38,7 +38,7 @@ public class OrderDaoImpl implements OrderDao {
 
     @Override
     public Optional<Order> findById(int orderId) throws SQLException {
-        String sql = "SELECT id, user_id, table_id, status, approved, createdAt FROM orders WHERE id = ?";
+        String sql = "SELECT id, userId, tableId, status, approved, createdAt FROM orders WHERE id = ?";
 
         try(Connection connection =DBConnection.getInstance().getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)
@@ -46,8 +46,6 @@ public class OrderDaoImpl implements OrderDao {
         ){
 
             ps.setInt(1, orderId);
-
-            ps.executeUpdate();
             try(ResultSet rs = ps.executeQuery()){
                 if (rs.next()) {
                     return Optional.of(map(rs));
@@ -125,7 +123,7 @@ public class OrderDaoImpl implements OrderDao {
         order.setId(rs.getInt("id"));
         order.setUserId(rs.getInt("userId"));
         order.setTableId(rs.getInt("tableId"));
-        order.setStatus(OrderStatus.valueOf(rs.getString("status")));
+        order.setStatus(OrderStatus.fromDb(rs.getString("status")));
         order.setApproved(rs.getBoolean("approved"));
         order.setCreatedAt(createdAt == null ? null : createdAt.toLocalDateTime());
         return order;

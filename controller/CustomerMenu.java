@@ -1,13 +1,23 @@
 package controller;
 
 import constance.MenuItemStatus;
+import constance.OrderStatusItem;
 import constance.TableStatus;
+import model.MenuItem;
+import model.Order;
+import model.OrderItem;
+import model.Table;
 import model.User;
 import service.impl.MenuService;
 import service.impl.OrderService;
 import service.impl.ReviewService;
 import service.impl.TableService;
+import util.CliTable;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class CustomerMenu {
@@ -27,9 +37,10 @@ public class CustomerMenu {
             System.out.println("2. Choose Table & Create Order");
             System.out.println("3. Add Item to Current Order");
             System.out.println("4. Remove Item from Current Order");
-            System.out.println("5. View My Orders");
-            System.out.println("6. Checkout Current Order");
-            System.out.println("7. Add Review");
+            System.out.println("5. View Current Order");
+            System.out.println("6. Order History");
+            System.out.println("7. Checkout Current Order");
+            System.out.println("8. Add Review");
             System.out.println("0. Logout");
 
 
@@ -42,17 +53,24 @@ public class CustomerMenu {
 
             switch(choice){
                 case 1 -> {
-                    System.out.println("=== MENU ITEMS ===");
-                    menuService.getAll().stream()
+                    List<String[]> rows = menuService.getAll().stream()
                             .filter(item -> item.getStatus() == MenuItemStatus.AVAILABLE)
-                            .forEach(System.out::println);
+                            .map(item -> item.toTableRow())
+                            .toList();
+                    CliTable.print("MENU ITEMS", MenuItem.tableHeaders(), rows, 4);
                 }
                 case 2 -> {
+                    if (orderService.getCurrentOrderByUser(user.getId()).isPresent()) {
+                        System.out.println("You already have a current order. Please checkout first.");
+                        continue;
+                    }
+
                     System.out.print("====Choose table ==== ");
-                    System.out.println("=== TABLES ===");
-                    tableService.getAll().stream()
+                    List<String[]> rows = tableService.getAll().stream()
                             .filter(item -> item.getStatus() == TableStatus.AVAILABLE)
-                            .forEach(System.out::println);
+                            .map(item -> item.toTableRow())
+                            .toList();
+                    CliTable.print("AVAILABLE TABLES", Table.tableHeaders(), rows, 3);
 
                     System.out.println("Enter id table: ");
                     int idTable;
@@ -63,24 +81,24 @@ public class CustomerMenu {
                         System.out.println("Invalid input! Please enter a number.");
                         continue;
                     }
-                    orderService.create(user.getId(), idTable);
-                    tableService.markOccupied(idTable);
+
+                    try {
+                        orderService.create(user.getId(), idTable);
+                        System.out.println("Order created successfully.");
+                    } catch (IllegalStateException e) {
+                        System.out.println(e.getMessage());
+                    }
 
                 }
                 case 3 -> {
-                    var activeOrders = orderService.getOrdersByUser(user.getId());
+                    var currentOrder = orderService.getCurrentOrderByUser(user.getId());
 
-                    if (activeOrders.isEmpty()) {
+                    if (currentOrder.isEmpty()) {
                         System.out.println("You don't have an active order. Please create one first.");
                         continue;
                     }
 
-                    if (activeOrders.size() > 1) {
-                        System.out.println("Multiple active orders found. Please contact staff.");
-                        continue;
-                    }
-
-                    var order = activeOrders.get(0);
+                    var order = currentOrder.get();
 
                     System.out.print("Enter menu item id: ");
                     int menuItemId;
@@ -118,18 +136,82 @@ public class CustomerMenu {
                 }
 
                 case 5 -> {
-                    System.out.println("=== MY ORDERS ===");
-                    orderService.getOrdersByUser(user.getId())
-                            .forEach(System.out::println);
+                    var currentOrder = orderService.getCurrentOrderByUser(user.getId());
+                    if (currentOrder.isEmpty()) {
+                        System.out.println("No current order. Please create one first.");
+                        continue;
+                    }
+
+                    List<String[]> rows = orderService.getOrderItems(currentOrder.get().getId()).stream()
+                            .map(OrderItem::toTableRow)
+                            .toList();
+                    if (rows.isEmpty()) {
+                        System.out.println("Current order has no items yet.");
+                        continue;
+                    }
+                    CliTable.print("CURRENT ORDER ITEMS", OrderItem.tableHeaders(), rows, 5);
                 }
 
                 case 6 -> {
-                    System.out.print("Enter order id to checkout: ");
-                    int orderId;
-                    try {
-                        orderId = Integer.parseInt(input.nextLine());
-                    } catch (NumberFormatException e) {
-                        System.out.println("Invalid input!");
+                    List<String[]> rows = orderService.getOrdersByUser(user.getId()).stream()
+                            .map(order -> order.toTableRow())
+                            .toList();
+                    CliTable.print("ORDER HISTORY", Order.tableHeaders(), rows, 3);
+                }
+
+                case 7 -> {
+                    var currentOrder = orderService.getCurrentOrderByUser(user.getId());
+                    if (currentOrder.isEmpty()) {
+                        System.out.println("No current order. Please create one first.");
+                        continue;
+                    }
+
+                    int orderId = currentOrder.get().getId();
+
+                    List<OrderItem> orderItems = orderService.getOrderItems(orderId);
+                    if (orderItems.isEmpty()) {
+                        System.out.println("Cannot checkout. Current order has no items.");
+                        continue;
+                    }
+
+                    boolean hasPendingItem = orderItems.stream()
+                            .anyMatch(item -> item.getStatus() == OrderStatusItem.PENDING);
+
+                    if (hasPendingItem) {
+                        System.out.println("Cannot checkout. Some items are still PENDING.");
+                        continue;
+                    }
+
+                    List<String[]> billRows = new ArrayList<>();
+                    BigDecimal totalAmount = BigDecimal.ZERO;
+
+                    for (OrderItem item : orderItems) {
+                        BigDecimal unitPrice = BigDecimal.valueOf(item.getPrice()).setScale(2, RoundingMode.HALF_UP);
+                        BigDecimal lineTotal = unitPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
+                        totalAmount = totalAmount.add(lineTotal);
+
+                        billRows.add(new String[]{
+                                String.valueOf(item.getId()),
+                                item.getMenuItemName(),
+                                String.valueOf(item.getQuantity()),
+                                unitPrice.toPlainString(),
+                                lineTotal.setScale(2, RoundingMode.HALF_UP).toPlainString(),
+                                item.getStatus() == null ? "" : item.getStatus().name()
+                        });
+                    }
+
+                    CliTable.print(
+                            "PAYMENT BILL",
+                            new String[]{"Item ID", "Menu Name", "Qty", "Unit Price", "Line Total", "Status"},
+                            billRows,
+                            5
+                    );
+                    System.out.println("Total Amount: " + totalAmount.setScale(2, RoundingMode.HALF_UP).toPlainString());
+                    System.out.print("Confirm payment? (Y/N): ");
+                    String confirm = input.nextLine().trim();
+
+                    if (!confirm.equalsIgnoreCase("Y")) {
+                        System.out.println("Payment cancelled.");
                         continue;
                     }
 
@@ -137,7 +219,7 @@ public class CustomerMenu {
                     System.out.println("Order approved (checkout successful).");
                 }
 
-                case 7 -> {
+                case 8 -> {
                     System.out.print("Enter rating (1-5): ");
                     int rating;
                     try {

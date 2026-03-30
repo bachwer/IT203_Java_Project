@@ -20,6 +20,7 @@ public class OrderItem {
         this.orderId = orderId;
         this.menuItemId = menuItemId;
         this.menuItemName = menuItemName;
+        this.quantity = quantity;
         this.status = status;
     }
 
@@ -41,6 +42,10 @@ public class OrderItem {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
     }
 
     public void setStatus(OrderStatusItem status) {
@@ -67,9 +72,29 @@ public class OrderItem {
         return quantity;
     }
 
+    public double getPrice() {
+        return price;
+    }
+
     public OrderStatusItem getStatus() {
         return status;
     }
+
+    public static String[] tableHeaders() {
+        return new String[]{"ID", "Order ID", "Menu ID", "Menu Name", "Qty", "Status"};
+    }
+
+    public String[] toTableRow() {
+        return new String[]{
+                String.valueOf(id),
+                String.valueOf(orderId),
+                String.valueOf(menuItemId),
+                menuItemName,
+                String.valueOf(quantity),
+                status == null ? "" : status.name()
+        };
+    }
+
     @Override
     public String toString() {
         return String.format(

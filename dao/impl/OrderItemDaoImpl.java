@@ -35,7 +35,7 @@ public class OrderItemDaoImpl implements OrderItemDao {
 
     @Override
     public List<OrderItem> findByOrderId(int orderId) throws SQLException {
-        String sql = "SELECT oi.id, oi.orderId, oi.menuItemId, oi.quantity, oi.status, mi.name FROM orderItem oi JOIN menu_item mi ON oi.menuItemId = mi.id WHERE orderId = ? ORDER BY id";
+        String sql = "SELECT oi.id, oi.orderId, oi.menuItemId, oi.quantity, oi.status, mi.name AS menu_item_name, mi.price AS unit_price FROM orderItem oi JOIN menu_item mi ON oi.menuItemId = mi.id WHERE oi.orderId = ? ORDER BY oi.id";
         List<OrderItem> orderItem = new ArrayList<>();
         try(Connection connection = DBConnection.getInstance().getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)
@@ -53,7 +53,7 @@ public class OrderItemDaoImpl implements OrderItemDao {
 
     @Override
     public List<OrderItem> findIncomingForChef() throws SQLException {
-        String sql = "Select  oi.id, oi.orderId, oi.menuItemId, mi.name AS menu_item_name, oi.quantity, oi.status from orderItem oi join menu_item mi  ON oi.menuItemId = mi.id JOIN orders o ON oi.orderId = o.id WHERE o.approved = TRUE AND oi.status <> 'COMPLETED' ORDER BY oi.id";
+        String sql = "Select  oi.id, oi.orderId, oi.menuItemId, mi.name AS menu_item_name, oi.quantity, oi.status, mi.price AS unit_price from orderItem oi join menu_item mi  ON oi.menuItemId = mi.id JOIN orders o ON oi.orderId = o.id WHERE o.approved = FALSE AND oi.status <> 'COMPLETED' ORDER BY oi.id";
         List<OrderItem> items = new ArrayList<>();
 
         try(Connection connection = DBConnection.getInstance().getConnection();
@@ -93,7 +93,7 @@ public class OrderItemDaoImpl implements OrderItemDao {
 
 
     private OrderItem map(ResultSet rs) throws SQLException {
-        return new OrderItem(
+        OrderItem item = new OrderItem(
                 rs.getInt("id"),
                 rs.getInt("orderId"),
                 rs.getInt("menuItemId"),
@@ -101,5 +101,7 @@ public class OrderItemDaoImpl implements OrderItemDao {
                 rs.getInt("quantity"),
                 OrderStatusItem.valueOf(rs.getString("status"))
         );
+        item.setPrice(rs.getDouble("unit_price"));
+        return item;
     }
 }

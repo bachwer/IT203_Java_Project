@@ -20,8 +20,18 @@ public class DBConnection {
         return instance;
     }
 
-    // 🔥 mỗi lần gọi → tạo connection mới
+    //  mỗi lần gọi → tạo connection mới
     public Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL, USER, PASS);
+    }
+
+    public void closeConnection(Connection conn) {
+        if (conn != null) {
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

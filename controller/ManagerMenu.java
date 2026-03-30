@@ -1,7 +1,5 @@
 package controller;
 
-import constance.Role;
-import constance.UserStatus;
 import model.MenuItem;
 import model.Review;
 import model.User;
@@ -9,11 +7,11 @@ import service.impl.AuthService;
 import service.impl.MenuService;
 import service.impl.OrderService;
 import service.impl.ReviewService;
+import util.CliTable;
 
 import java.util.List;
 import java.util.Scanner;
 
-import static util.PasswordHasher.hash;
 
 public class ManagerMenu {
     ManagerCRUD menuCRUD = new ManagerCRUD();
@@ -44,8 +42,8 @@ public class ManagerMenu {
                 continue;
             }
             switch(choice) {
-                case 1 -> {menuCRUD.menu("MenuItem");}
-                case 2 -> {menuCRUD.menu("Table");}
+                case 1 -> menuCRUD.menu("MenuItem");
+                case 2 -> menuCRUD.menu("Table");
                 case 3 -> {
                     System.out.print("Enter the name of menu to search: ");
                     String name = input.nextLine().trim();
@@ -53,16 +51,15 @@ public class ManagerMenu {
                         System.out.println("Name cannot be empty!");
                         break;
                     }
-                    List<MenuItem> Items = menuService.searchByName(name);
+                    List<MenuItem> items = menuService.searchByName(name);
 
-                    if(Items.isEmpty()){
-                        System.out.println("Don't Found!");
-                        return;
+                    if(items.isEmpty()){
+                        System.out.println("No menu item found!");
+                        break;
                     }
 
-                    for(MenuItem m :  Items){
-                        System.out.println(m.toString());
-                    }
+                    List<String[]> rows = items.stream().map(MenuItem::toTableRow).toList();
+                    CliTable.print("SEARCH MENU ITEMS", MenuItem.tableHeaders(), rows, 4);
 
 
                 }
@@ -109,7 +106,7 @@ public class ManagerMenu {
                     }
                 }
                 case 6 -> {
-                    System.out.println("Enter user want to Ban: ");
+                    System.out.println("Enter user ID to ban: ");
                     try {
                         int id = Integer.parseInt(input.nextLine());
                         if (id <= 0) {
@@ -134,9 +131,8 @@ public class ManagerMenu {
                         break;
                     }
 
-                    for(Review r: re){
-                        System.out.println(r.toString());
-                    }
+                    List<String[]> rows = re.stream().map(Review::toTableRow).toList();
+                    CliTable.print("CUSTOMER REVIEWS", Review.tableHeaders(), rows);
 
                 }
                 case 0 -> {

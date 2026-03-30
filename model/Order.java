@@ -78,6 +78,22 @@ public class Order {
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
+
+    public static String[] tableHeaders() {
+        return new String[]{"ID", "User ID", "Table ID", "Status", "Approved", "Created At"};
+    }
+
+    public String[] toTableRow() {
+        return new String[]{
+                String.valueOf(id),
+                String.valueOf(userId),
+                String.valueOf(tableId),
+                status == null ? "" : status.name(),
+                approved ? "YES" : "NO",
+                createdAt == null ? "" : createdAt.toString()
+        };
+    }
+
     @Override
     public String toString() {
         return String.format(

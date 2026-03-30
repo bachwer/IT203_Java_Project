@@ -32,10 +32,28 @@ public class OrderService implements OrderInterface {
     @Override
     public int create(int userId, int tableId){
         try {
-            if (tableDao.findById(tableId).isEmpty()) {
+            boolean userHasActiveOrder = orderDao.findByUserId(userId).stream()
+                    .anyMatch(order -> !order.isApproved());
+            if (userHasActiveOrder) {
+                throw new IllegalArgumentException("You already have a current order.");
+            }
+
+            Optional<model.Table> tableOpt = tableDao.findById(tableId);
+            if (tableOpt.isEmpty()) {
                 throw new IllegalArgumentException("Table does not exist.");
             }
-            Order order = new Order(0, userId, tableId, OrderStatus.PENDING, false, LocalDateTime.now());
+
+            if (tableOpt.get().getStatus() != TableStatus.AVAILABLE) {
+                throw new IllegalArgumentException("Table is not available.");
+            }
+
+            boolean tableHasActiveOrder = orderDao.findAll().stream()
+                    .anyMatch(order -> order.getTableId() == tableId && !order.isApproved());
+            if (tableHasActiveOrder) {
+                throw new IllegalArgumentException("Table already has an active order.");
+            }
+
+            Order order = new Order(0, userId, tableId, OrderStatus.CheckIn, false, LocalDateTime.now());
             int orderId = orderDao.create(order);
             if (orderId <= 0) {
                 throw new IllegalStateException("Failed to create order.");
@@ -78,12 +96,35 @@ public class OrderService implements OrderInterface {
             throw new IllegalStateException("Cannot get order items: " + e.getMessage(), e);
         }
     }
+
+    @Override
+    public List<OrderItem> findIncomingForChef() {
+        try {
+            return orderItemDao.findIncomingForChef();
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot get incoming order items: " + e.getMessage(), e);
+        }
+    }
+
+
+
     @Override
     public List<Order> getOrdersByUser(int userId) {
         try {
             return orderDao.findByUserId(userId);
         } catch (Exception e) {
             throw new IllegalStateException("Cannot get orders: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Optional<Order> getCurrentOrderByUser(int userId) {
+        try {
+            return orderDao.findByUserId(userId).stream()
+                    .filter(order -> !order.isApproved())
+                    .findFirst();
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot get current order: " + e.getMessage(), e);
         }
     }
 
@@ -96,13 +137,23 @@ public class OrderService implements OrderInterface {
             throw new IllegalStateException("Cannot get orders: " + e.getMessage(), e);
         }
     }
+
+
     @Override
     public void approveOrder(int orderId) {
         try {
-            boolean ok = orderDao.updateApproval(orderId, true);
-            if (!ok) {
+            Optional<Order> orderOpt = orderDao.findById(orderId);
+            if (orderOpt.isEmpty()) {
                 throw new IllegalArgumentException("Order not found.");
             }
+
+            boolean statusUpdated = orderDao.updateStatus(orderId, OrderStatus.CheckOuted);
+            boolean approvedUpdated = orderDao.updateApproval(orderId, true);
+            if (!statusUpdated || !approvedUpdated) {
+                throw new IllegalArgumentException("Order not found.");
+            }
+
+            tableDao.updateStatus(orderOpt.get().getTableId(), TableStatus.AVAILABLE.name());
         } catch (Exception e) {
             throw new IllegalStateException("Cannot approve order: " + e.getMessage(), e);
         }

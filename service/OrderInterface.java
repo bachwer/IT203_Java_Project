@@ -5,6 +5,7 @@ import model.Order;
 import model.OrderItem;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface OrderInterface {
     int create(int userId, int tableId);
@@ -15,7 +16,11 @@ public interface OrderInterface {
 
     List<OrderItem> getOrderItems(int orderId);
 
+    List<OrderItem> findIncomingForChef();
+
     List<Order> getOrdersByUser(int userId);
+
+    Optional<Order> getCurrentOrderByUser(int userId);
 
     List<Order> getAllOrders();
 

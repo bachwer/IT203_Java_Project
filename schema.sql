@@ -1,106 +1,61 @@
-Create database restaurant_db;
+CREATE DATABASE IF NOT EXISTS restaurant_db;
 USE restaurant_db;
 
 
-SHOW TABLES;
 
-
-
-create table menu_item
-(
-    id     INT PRIMARY key auto_increment,
-    price  DECIMAL(10, 2),
-    type   VARCHAR(150) not null,
-    name   VARCHAR(150) not null,
-    status ENUM ('AVAILABLE','DISABLED','OUT_OF_STOCK') NOT NULL DEFAULT 'AVAILABLE'
+CREATE TABLE IF NOT EXISTS menu_item (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    price DECIMAL(10, 2),
+    type VARCHAR(150) NOT NULL,
+    name VARCHAR(150) NOT NULL,
+    status ENUM('AVAILABLE', 'DISABLED', 'OUT_OF_STOCK') NOT NULL DEFAULT 'AVAILABLE'
 );
 
-
-
-create table users (
-    id int primary key auto_increment,
-    name varchar(150) not null,
-    password varchar(250) not null,
-    role enum('CUSTOMER', 'CHEF', 'MANAGER') not null DEFAULT 'CUSTOMER',
-    status enum('ACTIVE','DISABLE') not null DEFAULT 'ACTIVE'
-
+CREATE TABLE IF NOT EXISTS users (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(150) NOT NULL,
+    password VARCHAR(250) NOT NULL,
+    role ENUM('CUSTOMER', 'CHEF', 'MANAGER') NOT NULL DEFAULT 'CUSTOMER',
+    status ENUM('ACTIVE', 'DISABLE') NOT NULL DEFAULT 'ACTIVE'
 );
-insert users(name, password, role) value('admin', '$2a$10$3f2.e61.HJDDjKZyYWGCvevWj3.QnmAIPMyXdpK3iHGouReUpG5Ka', 'MANAGER');
 
-create table orders (
-    id int primary key auto_increment,
-    userId int not null,
-    tableId int not null,
-    status enum('PENDING', 'COOKING', 'DONE', 'CANCELLED'),
+INSERT INTO users(name, password, role)
+VALUES ('admin', '$2a$10$3f2.e61.HJDDjKZyYWGCvevWj3.QnmAIPMyXdpK3iHGouReUpG5Ka', 'MANAGER');
+
+CREATE TABLE IF NOT EXISTS tableRs (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(200) NOT NULL,
+    capacity INT NOT NULL,
+    status ENUM('AVAILABLE', 'OCCUPIED') NOT NULL DEFAULT 'AVAILABLE'
+);
+
+CREATE TABLE IF NOT EXISTS orders (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    userId INT NOT NULL,
+    tableId INT NOT NULL,
+    status ENUM('CheckIn', 'CheckOuted') NOT NULL DEFAULT 'CheckIn',
     approved BOOLEAN DEFAULT FALSE,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-
     FOREIGN KEY (userId) REFERENCES users(id),
-    FOREIGN KEY (tableId) REFERENCES tableRs(id),
-
-    UNIQUE (tableId)
-);
-drop table orders;
-
-create table orderItem(
-    id int primary key auto_increment,
-    orderId int not null,
-    menuItemId int not null,
-    quantity int not null,
-    status enum('PENDING', 'PROCESSING', 'COMPLETED', 'CANCELLED')  not null DEFAULT 'PENDING'
+    FOREIGN KEY (tableId) REFERENCES tableRs(id)
 );
 
+CREATE TABLE IF NOT EXISTS orderItem (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    orderId INT NOT NULL,
+    menuItemId INT NOT NULL,
+    quantity INT NOT NULL,
+    status ENUM('PENDING', 'PROCESSING', 'COMPLETED', 'CANCELLED') NOT NULL DEFAULT 'PENDING',
+    FOREIGN KEY (orderId) REFERENCES orders(id),
+    FOREIGN KEY (menuItemId) REFERENCES menu_item(id)
+);
 
-
-create table review(
-    id int primary key auto_increment,
-    userId int not null,
+CREATE TABLE IF NOT EXISTS review (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    userId INT NOT NULL,
     rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
-    comment text default null,
-    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+    comment TEXT DEFAULT NULL,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (userId) REFERENCES users(id)
 );
 
-
-create table tableRs
-(
-    id int primary key auto_increment,
-    name varchar(200) not null,
-    capacity int not null,
-    status enum('AVAILABLE', 'OCCUPIED') not null default 'AVAILABLE'
-);
-
-
-
-
-UPDATE tableRs SET name = ?, capacity = ?, status = ? WHERE id = ?;
-
-
-
-
-
-SELECT
-    oi.id,
-    oi.orderId,
-    oi.menuItemId,
-    oi.quantity,
-    oi.status,
-    mi.name
-FROM orderItem oi
-         JOIN menu_item mi ON oi.menuItemId = mi.id
-WHERE orderId = ?
-ORDER BY id;
-
-
-Select  oi.id, oi.orderId, oi.menuItemId, mi.name AS menu_item_name, oi.quantity, oi.status
-    from orderItem oi join menu_item mi  ON oi.id = mi.id JOIN orders o ON oi.orderId = o.id
-WHERE o.approved = TRUE AND oi.status <> 'SERVED' ORDER BY oi.id;
-
-
-
-
-select * from users;
-
-select * from orders;
-
-select * from tableRs;
-select * from review;

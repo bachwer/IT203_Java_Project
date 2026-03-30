@@ -3,11 +3,11 @@ package service.impl;
 import constance.TableStatus;
 import dao.TableDao;
 import dao.impl.TableDaoImpl;
-import model.MenuItem;
 import model.Table;
 import service.TableInterface;
 import util.InputValidator;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,8 +18,11 @@ public class TableService implements TableInterface {
     public int create(Table table) {
         try {
             validate(table);
+            if (isDuplicateNameForCreate(table.getName())) {
+                throw new IllegalArgumentException("Table name already exists.");
+            }
             return tableDao.create(table);
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new IllegalStateException("Cannot create table: " + e.getMessage(), e);
         }
     }
@@ -28,10 +31,13 @@ public class TableService implements TableInterface {
     public void update(Table table) {
         try {
             validate(table);
+            if (isDuplicateNameForUpdate(table.getId(), table.getName())) {
+                throw new IllegalArgumentException("Table name already exists.");
+            }
             if (!tableDao.update(table)) {
                 throw new IllegalArgumentException("Table not found.");
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new IllegalStateException("Cannot update table: " + e.getMessage(), e);
         }
     }
@@ -103,6 +109,22 @@ public class TableService implements TableInterface {
         if (table.getStatus() == null) {
             table.setStatus(TableStatus.AVAILABLE);
         }
+    }
+
+    private boolean isDuplicateNameForCreate(String name) throws SQLException {
+        String normalized = normalizeName(name);
+        return tableDao.findAll().stream()
+                .anyMatch(table -> normalizeName(table.getName()).equalsIgnoreCase(normalized));
+    }
+
+    private boolean isDuplicateNameForUpdate(int id, String name) throws SQLException {
+        String normalized = normalizeName(name);
+        return tableDao.findAll().stream()
+                .anyMatch(table -> table.getId() != id && normalizeName(table.getName()).equalsIgnoreCase(normalized));
+    }
+
+    private String normalizeName(String value) {
+        return value == null ? "" : value.trim();
     }
 
 

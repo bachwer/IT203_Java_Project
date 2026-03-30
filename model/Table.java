@@ -62,6 +62,19 @@ public class Table {
         return status;
     }
 
+    public static String[] tableHeaders() {
+        return new String[]{"ID", "Name", "Capacity", "Status"};
+    }
+
+    public String[] toTableRow() {
+        return new String[]{
+                String.valueOf(id),
+                name,
+                String.valueOf(capacity),
+                status == null ? "" : status.name()
+        };
+    }
+
     @Override
     public String toString() {
         return String.format("%-5d | %-10s | %-5d | %-10s",

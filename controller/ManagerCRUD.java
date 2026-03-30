@@ -4,9 +4,11 @@ import model.MenuItem;
 import model.Table;
 import service.impl.MenuService;
 import service.impl.TableService;
+import util.CliTable;
 import util.InputValidator;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Scanner;
 
 
@@ -74,11 +76,12 @@ public class ManagerCRUD {
 
                         MenuItem item = new MenuItem(name, price, type);
                         System.out.println(item);
-                        menuService.create(item);
-
-
-
-                        System.out.println("Create MenuItem success!");
+                        try {
+                            menuService.create(item);
+                            System.out.println("Create MenuItem success!");
+                        } catch (IllegalArgumentException | IllegalStateException e) {
+                            System.out.println(resolveErrorMessage(e));
+                        }
 
                     } else if (s.equals("Table")) {
 
@@ -108,11 +111,12 @@ public class ManagerCRUD {
 
 
                         Table table = new Table(name, capacity);
-
-
-                        tableService.create(table);
-
-                        System.out.println("Create Table success!");
+                        try {
+                            tableService.create(table);
+                            System.out.println("Create Table success!");
+                        } catch (IllegalArgumentException | IllegalStateException e) {
+                            System.out.println(resolveErrorMessage(e));
+                        }
                     }
                 }
                 case 2 -> {
@@ -165,9 +169,12 @@ public class ManagerCRUD {
                         item.setPrice(price);
                         item.setType(type);
                         item.setStatus(oldItem.getStatus());
-                        menuService.update(item);
-
-                        System.out.println("Update MenuItem success!");
+                        try {
+                            menuService.update(item);
+                            System.out.println("Update MenuItem success!");
+                        } catch (IllegalArgumentException | IllegalStateException e) {
+                            System.out.println(resolveErrorMessage(e));
+                        }
 
                     } else if (s.equals("Table")) {
                         System.out.print("Enter ID: ");
@@ -210,9 +217,12 @@ public class ManagerCRUD {
                         table.setName(name);
                         table.setCapacity(capacity);
                         table.setStatus(oldTable.getStatus());
-                        tableService.update(table);
-
-                        System.out.println("Update Table success!");
+                        try {
+                            tableService.update(table);
+                            System.out.println("Update Table success!");
+                        } catch (IllegalArgumentException | IllegalStateException e) {
+                            System.out.println(resolveErrorMessage(e));
+                        }
                     }
                 }
                 case 3 -> {
@@ -235,11 +245,15 @@ public class ManagerCRUD {
                 }
                 case 4 -> {
                     if (s.equals("MenuItem")) {
-                        System.out.println("=== MENU ITEMS ===");
-                        menuService.getAll().forEach(System.out::println);
+                        List<String[]> rows = menuService.getAll().stream()
+                                .map(MenuItem::toTableRow)
+                                .toList();
+                        CliTable.print("MENU ITEMS", MenuItem.tableHeaders(), rows, 4);
                     } else if (s.equals("Table")) {
-                        System.out.println("=== TABLES ===");
-                        tableService.getAll().forEach(System.out::println);
+                        List<String[]> rows = tableService.getAll().stream()
+                                .map(Table::toTableRow)
+                                .toList();
+                        CliTable.print("TABLES", Table.tableHeaders(), rows, 3);
                     }
                 }
 
@@ -249,5 +263,12 @@ public class ManagerCRUD {
                 default ->  System.out.println("invalid input !");
             }
         }
+    }
+
+    private String resolveErrorMessage(Exception e) {
+        if (e.getMessage() != null && !e.getMessage().isBlank()) {
+            return e.getMessage();
+        }
+        return "Operation failed.";
     }
 }

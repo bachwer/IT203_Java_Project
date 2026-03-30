@@ -76,6 +76,20 @@ public class MenuItem {
         return status;
     }
 
+    public static String[] tableHeaders() {
+        return new String[]{"ID", "Name", "Price", "Type", "Status"};
+    }
+
+    public String[] toTableRow() {
+        return new String[]{
+                String.valueOf(id),
+                name,
+                price == null ? "" : price.toPlainString(),
+                type,
+                status == null ? "" : status.name()
+        };
+    }
+
 
 
     @Override
@@ -84,7 +98,7 @@ public class MenuItem {
                 "%-5d | %-20s | %-10s | %-10s | %-10s",
                 id,
                 name,
-                price,
+                price == null ? "" : price.toPlainString(),
                 type,
                 status
         );
