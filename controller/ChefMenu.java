@@ -20,7 +20,8 @@ public class ChefMenu {
         while(true) {
             System.out.println("=== Chef Menu - " +  user.getUserName() + " ===");
             System.out.println("1. View Incoming Order Items");
-            System.out.println("2. Update Item Status");
+            System.out.println("2. Start Processing (PENDING -> PROCESSING)");
+            System.out.println("3. Mark as Ready (PROCESSING -> COMPLETED)");
             System.out.println("0. Logout");
 
             try {
@@ -42,10 +43,21 @@ public class ChefMenu {
                     }
 
                     CliTable.print("INCOMING ORDER ITEMS", OrderItem.tableHeaders(), rows, 5);
-
                 }
                 case 2 -> {
-                    System.out.print("Enter Order Item ID to update: ");
+                    List<String[]> rows = orderService.findIncomingForChef().stream()
+                            .filter(item -> item.getStatus() == OrderStatusItem.PENDING)
+                            .map(OrderItem::toTableRow)
+                            .toList();
+
+                    if (rows.isEmpty()) {
+                        System.out.println("No items available.");
+                        continue;
+                    }
+
+                    CliTable.print("PENDING ITEMS", OrderItem.tableHeaders(), rows, 5);
+
+                    System.out.print("Enter Order Item ID (PENDING -> PROCESSING): ");
                     int orderItemId;
                     try {
                         orderItemId = Integer.parseInt(input.nextLine());
@@ -54,47 +66,40 @@ public class ChefMenu {
                         continue;
                     }
 
-
-                    System.out.println("Select new status:");
-                    System.out.println("1. PENDING");
-                    System.out.println("2. PROCESSING");
-                    System.out.println("3. COMPLETED");
-                    System.out.println("4. CANCELLED");
-
-                    System.out.print("Enter choice (1-4): ");
-
-                    int choice;
                     try {
-                        choice = Integer.parseInt(input.nextLine());
+                        orderService.advanceOrderItemStatus(orderItemId, OrderStatusItem.PROCESSING);
+                        System.out.println("Order item moved to PROCESSING.");
+                    } catch (Exception e) {
+                        System.out.println("Failed: " + e.getMessage());
+                    }
+                }
+                case 3 -> {
+                    List<String[]> rows = orderService.findIncomingForChef().stream()
+                            .filter(item -> item.getStatus() == OrderStatusItem.PROCESSING)
+                            .map(OrderItem::toTableRow)
+                            .toList();
+
+                    if (rows.isEmpty()) {
+                        System.out.println("No items available.");
+                        continue;
+                    }
+
+                    CliTable.print("PROCESSING ITEMS", OrderItem.tableHeaders(), rows, 5);
+
+                    System.out.print("Enter Order Item ID (PROCESSING -> COMPLETED): ");
+                    int orderItemId;
+                    try {
+                        orderItemId = Integer.parseInt(input.nextLine());
                     } catch (NumberFormatException e) {
                         System.out.println("Invalid input! Please enter a number.");
                         continue;
                     }
 
-                    OrderStatusItem status;
-                    switch (choice) {
-                        case 1:
-                            status = OrderStatusItem.PENDING;
-                            break;
-                        case 2:
-                            status = OrderStatusItem.PROCESSING;
-                            break;
-                        case 3:
-                            status = OrderStatusItem.COMPLETED;
-                            break;
-                        case 4:
-                            status = OrderStatusItem.CANCELLED;
-                            break;
-                        default:
-                            System.out.println("Invalid choice! Please select 1-4.");
-                            continue;
-                    }
-
                     try {
-                        orderService.advanceOrderItemStatus(orderItemId, status);
-                        System.out.println("Order item status updated successfully.");
+                        orderService.advanceOrderItemStatus(orderItemId, OrderStatusItem.COMPLETED);
+                        System.out.println("Order item marked as COMPLETED.");
                     } catch (Exception e) {
-                        System.out.println("Failed to update order item status: " + e.getMessage());
+                        System.out.println("Failed: " + e.getMessage());
                     }
                 }
                 case 0 -> {

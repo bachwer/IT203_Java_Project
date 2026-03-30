@@ -17,6 +17,7 @@ public class OrderDaoImpl implements OrderDao {
     public int create(Order order) throws SQLException {
         String sql = "INSERT into orders(userId, tableId, status, approved) values (?,?,?,?)";
 
+//        Java sẽ tự động gọi close() cho tất cả resource bên trong try khi block kết thúc, bao gồm:
         try(Connection connection = DBConnection.getInstance().getConnection();
             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
         ){

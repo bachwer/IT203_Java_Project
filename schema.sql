@@ -23,6 +23,8 @@ CREATE TABLE IF NOT EXISTS users (
 INSERT IGNORE INTO users(name, password, role)
 VALUES ('admin', '$2a$10$3f2.e61.HJDDjKZyYWGCvevWj3.QnmAIPMyXdpK3iHGouReUpG5Ka', 'MANAGER');
 
+
+select * from users;
 CREATE TABLE IF NOT EXISTS tableRs (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(200) NOT NULL,
@@ -54,6 +56,8 @@ CREATE TABLE IF NOT EXISTS orderItem (
     FOREIGN KEY (orderId) REFERENCES orders(id),
     FOREIGN KEY (menuItemId) REFERENCES menu_item(id)
 );
+
+select * from orderItem;
 
 CREATE TABLE IF NOT EXISTS review (
     id INT PRIMARY KEY AUTO_INCREMENT,
