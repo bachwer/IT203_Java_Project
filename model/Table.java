@@ -69,7 +69,7 @@ public class Table {
     public String[] toTableRow() {
         return new String[]{
                 String.valueOf(id),
-                name,
+                name.toUpperCase(),
                 String.valueOf(capacity),
                 status == null ? "" : status.name()
         };

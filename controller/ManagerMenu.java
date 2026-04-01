@@ -34,13 +34,12 @@ public class ManagerMenu {
                     "1. CRUD Menu Items",
                     "2. CRUD Tables",
                     "3. Search Menu by Name",
-                    "4. Approve Orders",
-                    "5. Create Chef User",
-                    "6. Ban Customer",
-                    "7. Unban Customer",
-                    "8. Show Full Users",
-                    "9. View Reviews",
-                    "10. View Revenue Report",
+                    "4. Create Chef User",
+                    "5. Ban Customer",
+                    "6. Unban Customer",
+                    "7. Show Full Users",
+                    "8. View Reviews",
+                    "9. View Revenue Report",
                     "0. Logout"
             ));
 
@@ -73,19 +72,6 @@ public class ManagerMenu {
 
                 }
                 case 4 -> {
-                    Integer id = InputValidator.readInt(input, "Enter order ID to approve: ");
-                    if (id == null || id <= 0) {
-                        CliUi.warning("Order ID must be a positive number!");
-                        break;
-                    }
-                    try {
-                        orderService.approveOrder(id);
-                        CliUi.success("Order approved successfully.");
-                    } catch (Exception ex) {
-                        CliUi.error("Failed to approve order: " + ex.getMessage());
-                    }
-                }
-                case 5 -> {
                     String name = InputValidator.readNonBlank(input, "Enter chef username: ");
                     if (name == null) {
                         CliUi.warning("Chef name cannot be empty!");
@@ -110,7 +96,7 @@ public class ManagerMenu {
                         CliUi.error("Failed to create chef account: " + e.getMessage());
                     }
                 }
-                case 6 -> {
+                case 5 -> {
                     Integer id = InputValidator.readInt(input, "Enter customer user ID to ban: ");
                     if (id == null || id <= 0) {
                         CliUi.warning("User ID must be a positive number!");
@@ -127,7 +113,7 @@ public class ManagerMenu {
                         CliUi.error("Failed to ban user: " + ex.getMessage());
                     }
                 }
-                case 7 -> {
+                case 6 -> {
                     Integer id = InputValidator.readInt(input, "Enter customer user ID to unban: ");
                     if (id == null || id <= 0) {
                         CliUi.warning("User ID must be a positive number!");
@@ -140,7 +126,7 @@ public class ManagerMenu {
                         CliUi.error("Failed to unban user: " + ex.getMessage());
                     }
                 }
-                case 8 -> {
+                case 7 -> {
                     List<User> users = authService.getAllUsers();
                     if (users.isEmpty()) {
                         CliUi.info("No users found!");
@@ -151,7 +137,7 @@ public class ManagerMenu {
                     CliTable.print("FULL USER LIST", User.tableHeaders(), rows, 3);
                     pause();
                 }
-                case 9 -> {
+                case 8 -> {
 
                     List<Review> re = reviewService.getAllReviews();
                     if (re.isEmpty()) {
@@ -164,7 +150,7 @@ public class ManagerMenu {
                     pause();
 
                 }
-                case 10 -> {
+                case 9 -> {
                     int checkedOutOrders = orderService.countCheckedOutOrders();
                     BigDecimal totalRevenue = orderService.getTotalRevenue().setScale(2, RoundingMode.HALF_UP);
 

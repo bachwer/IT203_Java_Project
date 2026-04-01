@@ -83,7 +83,7 @@ public class MenuItem {
     public String[] toTableRow() {
         return new String[]{
                 String.valueOf(id),
-                name,
+                name.toUpperCase(),
                 price == null ? "" : price.toPlainString(),
                 type,
                 status == null ? "" : status.name()
