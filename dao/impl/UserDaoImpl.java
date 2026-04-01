@@ -103,6 +103,22 @@ public class UserDaoImpl implements UserDao {
         return users;
     }
 
+    @Override
+    public List<User> findAll() throws SQLException {
+        String sql = "SELECT id, name, password, role, status FROM users ORDER BY role, id";
+        List<User> users = new java.util.ArrayList<>();
+
+        try (Connection connection = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                users.add(map(rs));
+            }
+        }
+        return users;
+    }
+
     private User map(ResultSet rs) throws SQLException {
         User item = new User();
         item.setId(rs.getInt("id"));

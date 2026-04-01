@@ -77,26 +77,45 @@ public class AuthService implements AuthInterface {
             throw new IllegalStateException("Cannot get chefs: " + e.getMessage(), e);
         }
     }
+
+    @Override
+    public List<User> getAllUsers() {
+        try {
+            return userDao.findAll();
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot get users: " + e.getMessage(), e);
+        }
+    }
+
     @Override
     public void banUser(int userId) {
+        changeCustomerStatus(userId, UserStatus.DISABLE, "ban", "banned");
+    }
+
+    @Override
+    public void unbanUser(int userId) {
+        changeCustomerStatus(userId, UserStatus.ACTIVE, "unban", "active");
+    }
+
+    private void changeCustomerStatus(int userId, UserStatus targetStatus, String actionLabel, String finalLabel) {
         try {
             User user = userDao.findById(userId)
                     .orElseThrow(() -> new IllegalArgumentException("User not found."));
 
             if (user.getRole() != Role.CUSTOMER) {
-                throw new IllegalArgumentException("Only customer accounts can be banned.");
+                throw new IllegalArgumentException("Only customer accounts can be " + actionLabel + "ned.");
             }
 
-            if (user.getStatus() == UserStatus.DISABLE) {
-                throw new IllegalArgumentException("User is already banned.");
+            if (user.getStatus() == targetStatus) {
+                throw new IllegalArgumentException("User is already " + finalLabel + ".");
             }
 
-            boolean ok = userDao.updateStatus(userId, UserStatus.DISABLE.name());
+            boolean ok = userDao.updateStatus(userId, targetStatus.name());
             if (!ok) {
                 throw new IllegalArgumentException("User not found.");
             }
         } catch (Exception e) {
-            throw new IllegalStateException("Cannot ban user: " + e.getMessage(), e);
+            throw new IllegalStateException("Cannot " + actionLabel + " user: " + e.getMessage(), e);
         }
     }
 

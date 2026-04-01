@@ -17,5 +17,9 @@ public interface AuthInterface {
 
     List<User> getChefs();
 
+    List<User> getAllUsers();
+
     void banUser(int userId);
+
+    void unbanUser(int userId);
 }

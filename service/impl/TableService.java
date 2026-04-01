@@ -5,6 +5,7 @@ import dao.TableDao;
 import dao.impl.TableDaoImpl;
 import model.Table;
 import service.TableInterface;
+import util.CliUi;
 import util.InputValidator;
 
 import java.sql.SQLException;
@@ -47,6 +48,7 @@ public class TableService implements TableInterface {
             if (!tableDao.delete(tableId)) {
                 throw new IllegalArgumentException("Table not found.");
             }
+            CliUi.info("Table deleted (soft delete).");
         } catch (Exception e) {
             throw new IllegalStateException("Cannot delete table: " + e.getMessage(), e);
         }

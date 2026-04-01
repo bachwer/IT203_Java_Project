@@ -16,4 +16,6 @@ public interface OrderItemDao {
     boolean updateStatus(int orderItemId, OrderStatusItem status) throws SQLException;
 
     boolean removePendingItem(int orderItemId) throws SQLException;
+    long countByMenuItemId(int menuItemId) throws SQLException;
 }
+

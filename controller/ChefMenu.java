@@ -5,6 +5,8 @@ import model.OrderItem;
 import model.User;
 import service.impl.OrderService;
 import util.CliTable;
+import util.CliUi;
+import util.InputValidator;
 
 import java.util.List;
 import java.util.Scanner;
@@ -18,18 +20,19 @@ public class ChefMenu {
 
 
         while(true) {
-            System.out.println("=== Chef Menu - " +  user.getUserName() + " ===");
-            System.out.println("1. View Incoming Order Items");
-            System.out.println("2. Start Processing (PENDING -> PROCESSING)");
-            System.out.println("3. Mark as Ready (PROCESSING -> COMPLETED)");
-            System.out.println("0. Logout");
+            CliUi.printMenu("CHEF MENU - " + user.getUserName(), List.of(
+                    "1. View Incoming Order Items",
+                    "2. Start Processing (PENDING -> PROCESSING)",
+                    "3. Mark as Ready (PROCESSING -> COMPLETED)",
+                    "0. Logout"
+            ));
 
-            try {
-                CHOICE_VIEW_INCOMING = Integer.parseInt(input.nextLine());
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid input! Please enter a number.");
+            Integer selected = InputValidator.readInt(input, "Select option: ");
+            if (selected == null) {
+                CliUi.error("Invalid input! Please enter a number.");
                 continue;
             }
+            CHOICE_VIEW_INCOMING = selected;
 
             switch(CHOICE_VIEW_INCOMING) {
                 case 1 -> {
@@ -38,7 +41,7 @@ public class ChefMenu {
                             .toList();
 
                     if (rows.isEmpty()) {
-                        System.out.println("No incoming order items.");
+                        CliUi.info("No incoming order items.");
                         continue;
                     }
 
@@ -51,26 +54,23 @@ public class ChefMenu {
                             .toList();
 
                     if (rows.isEmpty()) {
-                        System.out.println("No items available.");
+                        CliUi.info("No items available.");
                         continue;
                     }
 
                     CliTable.print("PENDING ITEMS", OrderItem.tableHeaders(), rows, 5);
 
-                    System.out.print("Enter Order Item ID (PENDING -> PROCESSING): ");
-                    int orderItemId;
-                    try {
-                        orderItemId = Integer.parseInt(input.nextLine());
-                    } catch (NumberFormatException e) {
-                        System.out.println("Invalid input! Please enter a number.");
+                    Integer orderItemId = InputValidator.readInt(input, "Enter order item ID (PENDING -> PROCESSING): ");
+                    if (orderItemId == null || orderItemId <= 0) {
+                        CliUi.warning("Invalid order item ID!");
                         continue;
                     }
 
                     try {
                         orderService.advanceOrderItemStatus(orderItemId, OrderStatusItem.PROCESSING);
-                        System.out.println("Order item moved to PROCESSING.");
+                        CliUi.success("Order item moved to PROCESSING.");
                     } catch (Exception e) {
-                        System.out.println("Failed: " + e.getMessage());
+                        CliUi.error("Failed: " + e.getMessage());
                     }
                 }
                 case 3 -> {
@@ -80,32 +80,30 @@ public class ChefMenu {
                             .toList();
 
                     if (rows.isEmpty()) {
-                        System.out.println("No items available.");
+                        CliUi.info("No items available.");
                         continue;
                     }
 
                     CliTable.print("PROCESSING ITEMS", OrderItem.tableHeaders(), rows, 5);
 
-                    System.out.print("Enter Order Item ID (PROCESSING -> COMPLETED): ");
-                    int orderItemId;
-                    try {
-                        orderItemId = Integer.parseInt(input.nextLine());
-                    } catch (NumberFormatException e) {
-                        System.out.println("Invalid input! Please enter a number.");
+                    Integer orderItemId = InputValidator.readInt(input, "Enter order item ID (PROCESSING -> COMPLETED): ");
+                    if (orderItemId == null || orderItemId <= 0) {
+                        CliUi.warning("Invalid order item ID!");
                         continue;
                     }
 
                     try {
                         orderService.advanceOrderItemStatus(orderItemId, OrderStatusItem.COMPLETED);
-                        System.out.println("Order item marked as COMPLETED.");
+                        CliUi.success("Order item marked as COMPLETED.");
                     } catch (Exception e) {
-                        System.out.println("Failed: " + e.getMessage());
+                        CliUi.error("Failed: " + e.getMessage());
                     }
                 }
                 case 0 -> {
+                    CliUi.info("Logout chef account.");
                     return;
                 }
-                default -> System.out.println("Invalid input!");
+                default -> CliUi.warning("Invalid option!");
             }
         }
 

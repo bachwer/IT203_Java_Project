@@ -17,4 +17,6 @@ public interface UserDao {
     boolean updateStatus(int userId, String status) throws SQLException;
 
     List<User> findByRole(Role role) throws SQLException;
+
+    List<User> findAll() throws SQLException;
 }

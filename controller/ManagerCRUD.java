@@ -5,10 +5,12 @@ import model.Table;
 import service.impl.MenuService;
 import service.impl.TableService;
 import util.CliTable;
+import util.CliUi;
 import util.InputValidator;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 
 
@@ -20,92 +22,79 @@ public class ManagerCRUD {
     public void menu(String s) {
         int choice;
         while(true) {
-            System.out.println("=== Menu Item ManagementL: " + s + " === ");
-            System.out.println("1. Create: " + s);
-            System.out.println("2. Update: " + s);
-            System.out.println("3. Delete: " + s);
-            System.out.println("4. View All: " + s);
-            System.out.println("0. Back");
+            CliUi.printMenu(("MANAGER CRUD - " + s).toUpperCase(Locale.ROOT), List.of(
+                    "1. Create " + s,
+                    "2. Update " + s,
+                    "3. Delete " + s,
+                    "4. View All " + s,
+                    "0. Back"
+            ));
 
-            try {
-                choice = Integer.parseInt(input.nextLine());
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid input! Please enter a number.");
+            Integer selected = InputValidator.readInt(input, "Select option: ");
+            if (selected == null) {
+                CliUi.error("Invalid input! Please enter a number.");
                 continue;
             }
+            choice = selected;
             switch(choice) {
                 case 1 -> {
                     if (s.equals("MenuItem")) {
 
-                        System.out.print("Enter the name MenuItem: ");
-                        String name = input.nextLine().trim();
+                        String name = InputValidator.readNonBlank(input, "Enter menu name: ");
 
                         if (InputValidator.isNotBlank(name)) {
-                            System.out.println("Name must not be empty!");
+                            CliUi.warning("Name must not be empty!");
                             break;
                         }
 
-                        System.out.print("Enter Price: ");
-                        BigDecimal price;
+                        BigDecimal price = InputValidator.readBigDecimal(input, "Enter price: ");
 
-                        try {
-                            price = new BigDecimal(input.nextLine().trim());
-
-                            if (!InputValidator.isPositivePrice(price)) {
-                                System.out.println("Price must be greater than 0!");
-                                break;
-                            }
-
-                        } catch (NumberFormatException e) {
-                            System.out.println("Invalid price format!");
+                        if (price == null) {
+                            CliUi.warning("Invalid price format!");
+                            break;
+                        }
+                        if (!InputValidator.isPositivePrice(price)) {
+                            CliUi.warning("Price must be greater than 0!");
                             break;
                         }
 
-                        System.out.print("Enter Type (FOOD/DRINK): ");
-                        String type = input.nextLine().trim();
+                        String type = InputValidator.readNonBlank(input, "Enter type (FOOD/DRINK): ");
 
                         if (InputValidator.isNotBlank(type)) {
-                            System.out.println("Type must not be empty!");
+                            CliUi.warning("Type must not be empty!");
                             break;
                         }
 
                         if (!type.equalsIgnoreCase("FOOD") && !type.equalsIgnoreCase("DRINK")) {
-                            System.out.println("Type must be FOOD or DRINK!");
+                            CliUi.warning("Type must be FOOD or DRINK!");
                             break;
                         }
 
                         MenuItem item = new MenuItem(name, price, type);
-                        System.out.println(item);
                         try {
                             menuService.create(item);
-                            System.out.println("Create MenuItem success!");
+                            CliUi.success("Create menu item success!");
                         } catch (IllegalArgumentException | IllegalStateException e) {
-                            System.out.println(resolveErrorMessage(e));
+                            CliUi.error(resolveErrorMessage(e));
                         }
 
                     } else if (s.equals("Table")) {
 
-                        System.out.print("Enter the table name: ");
-                        String name = input.nextLine().trim();
+                        String name = InputValidator.readNonBlank(input, "Enter table name: ");
 
                         if (InputValidator.isNotBlank(name)) {
-                            System.out.println("Name must not be empty!");
+                            CliUi.warning("Name must not be empty!");
                             break;
                         }
 
-                        System.out.print("Enter Capacity: ");
-                        int capacity;
+                        Integer capacity = InputValidator.readInt(input, "Enter capacity: ");
+                        if (capacity == null) {
+                            CliUi.warning("Invalid number!");
+                            break;
+                        }
 
-                        try {
-                            capacity = Integer.parseInt(input.nextLine().trim());
-
-                            if (InputValidator.isPositiveInt(capacity)) {
-                                System.out.println("Capacity must be positive!");
-                                break;
-                            }
-
-                        } catch (NumberFormatException e) {
-                            System.out.println("Invalid number!");
+                        if (InputValidator.isPositiveInt(capacity)) {
+                            CliUi.warning("Capacity must be positive!");
                             break;
                         }
 
@@ -113,57 +102,49 @@ public class ManagerCRUD {
                         Table table = new Table(name, capacity);
                         try {
                             tableService.create(table);
-                            System.out.println("Create Table success!");
+                            CliUi.success("Create table success!");
                         } catch (IllegalArgumentException | IllegalStateException e) {
-                            System.out.println(resolveErrorMessage(e));
+                            CliUi.error(resolveErrorMessage(e));
                         }
                     }
                 }
                 case 2 -> {
                     if (s.equals("MenuItem")) {
-                        System.out.print("Enter ID: ");
-                        int id;
-                        try {
-                            id = Integer.parseInt(input.nextLine().trim());
-                        } catch (NumberFormatException e) {
-                            System.out.println("Invalid ID!");
+                        Integer id = InputValidator.readInt(input, "Enter ID: ");
+                        if (id == null) {
+                            CliUi.warning("Invalid ID!");
                             break;
                         }
 
                         MenuItem oldItem = menuService.findByIdItem(id);
                         if (oldItem == null) {
-                            System.out.println("MenuItem not found!");
+                            CliUi.warning("Menu item not found!");
                             break;
                         }
 
-                        System.out.print("Enter new name: ");
-                        String name = input.nextLine().trim();
+                        String name = InputValidator.readNonBlank(input, "Enter new name: ");
                         if (InputValidator.isNotBlank(name)) {
-                            System.out.println("Name must not be empty!");
+                            CliUi.warning("Name must not be empty!");
                             break;
                         }
 
-                        System.out.print("Enter new price: ");
-                        BigDecimal price;
-                        try {
-                            price = new BigDecimal(input.nextLine().trim());
-                            if (!InputValidator.isPositivePrice(price)) {
-                                System.out.println("Price must be greater than 0!");
-                                break;
-                            }
-                        } catch (NumberFormatException e) {
-                            System.out.println("Invalid price!");
+                        BigDecimal price = InputValidator.readBigDecimal(input, "Enter new price: ");
+                        if (price == null) {
+                            CliUi.warning("Invalid price!");
+                            break;
+                        }
+                        if (!InputValidator.isPositivePrice(price)) {
+                            CliUi.warning("Price must be greater than 0!");
                             break;
                         }
 
-                        System.out.print("Enter new type (FOOD/DRINK): ");
-                        String type = input.nextLine().trim();
+                        String type = InputValidator.readNonBlank(input, "Enter new type (FOOD/DRINK): ");
                         if (InputValidator.isNotBlank(type)) {
-                            System.out.println("Type must not be empty!");
+                            CliUi.warning("Type must not be empty!");
                             break;
                         }
                         if (!type.equalsIgnoreCase("FOOD") && !type.equalsIgnoreCase("DRINK")) {
-                            System.out.println("Type must be FOOD or DRINK!");
+                            CliUi.warning("Type must be FOOD or DRINK!");
                             break;
                         }
 
@@ -175,44 +156,37 @@ public class ManagerCRUD {
                         item.setStatus(oldItem.getStatus());
                         try {
                             menuService.update(item);
-                            System.out.println("Update MenuItem success!");
+                            CliUi.success("Update menu item success!");
                         } catch (IllegalArgumentException | IllegalStateException e) {
-                            System.out.println(resolveErrorMessage(e));
+                            CliUi.error(resolveErrorMessage(e));
                         }
 
                     } else if (s.equals("Table")) {
-                        System.out.print("Enter ID: ");
-                        int id;
-                        try {
-                            id = Integer.parseInt(input.nextLine().trim());
-                        } catch (NumberFormatException e) {
-                            System.out.println("Invalid ID!");
+                        Integer id = InputValidator.readInt(input, "Enter ID: ");
+                        if (id == null) {
+                            CliUi.warning("Invalid ID!");
                             break;
                         }
 
                         Table oldTable = tableService.findByIdTable(id);
                         if (oldTable == null) {
-                            System.out.println("Table not found!");
+                            CliUi.warning("Table not found!");
                             break;
                         }
 
-                        System.out.print("Enter new name: ");
-                        String name = input.nextLine().trim();
+                        String name = InputValidator.readNonBlank(input, "Enter new name: ");
                         if (InputValidator.isNotBlank(name)) {
-                            System.out.println("Name must not be empty!");
+                            CliUi.warning("Name must not be empty!");
                             break;
                         }
 
-                        System.out.print("Enter new capacity: ");
-                        int capacity;
-                        try {
-                            capacity = Integer.parseInt(input.nextLine().trim());
-                            if (InputValidator.isPositiveInt(capacity)) {
-                                System.out.println("Capacity must be positive!");
-                                break;
-                            }
-                        } catch (NumberFormatException e) {
-                            System.out.println("Invalid capacity!");
+                        Integer capacity = InputValidator.readInt(input, "Enter new capacity: ");
+                        if (capacity == null) {
+                            CliUi.warning("Invalid capacity!");
+                            break;
+                        }
+                        if (InputValidator.isPositiveInt(capacity)) {
+                            CliUi.warning("Capacity must be positive!");
                             break;
                         }
 
@@ -223,42 +197,38 @@ public class ManagerCRUD {
                         table.setStatus(oldTable.getStatus());
                         try {
                             tableService.update(table);
-                            System.out.println("Update Table success!");
+                            CliUi.success("Update table success!");
                         } catch (IllegalArgumentException | IllegalStateException e) {
-                            System.out.println(resolveErrorMessage(e));
+                            CliUi.error(resolveErrorMessage(e));
                         }
                     }
                 }
                 case 3 -> {
-                    System.out.print("Enter ID to delete: ");
-                    int id;
-                    try {
-                        id = Integer.parseInt(input.nextLine().trim());
-                    } catch (NumberFormatException e) {
-                        System.out.println("Invalid ID!");
+                    Integer id = InputValidator.readInt(input, "Enter ID to delete: ");
+                    if (id == null) {
+                        CliUi.warning("Invalid ID!");
                         break;
                     }
 
-                    System.out.print("Confirm delete (Y/N): ");
-                    String confirm = input.nextLine().trim();
-                    if (!confirm.equalsIgnoreCase("Y")) {
-                        System.out.println("Delete cancelled.");
+                    String confirm = InputValidator.readNonBlank(input, "Confirm delete (Y/N): ");
+                    if (!InputValidator.isYes(confirm)) {
+                        CliUi.info("Delete cancelled.");
                         break;
                     }
 
                     if (s.equals("MenuItem")) {
                         try {
                             menuService.delete(id);
-                            System.out.println("Delete MenuItem success!");
+                            CliUi.success("Delete menu item success!");
                         } catch (IllegalArgumentException | IllegalStateException e) {
-                            System.out.println(resolveErrorMessage(e));
+                            CliUi.error(resolveErrorMessage(e));
                         }
                     } else if (s.equals("Table")) {
                         try {
                             tableService.delete(id);
-                            System.out.println("Delete Table success!");
+                            CliUi.success("Delete table success!");
                         } catch (IllegalArgumentException | IllegalStateException e) {
-                            System.out.println(resolveErrorMessage(e));
+                            CliUi.error(resolveErrorMessage(e));
                         }
                     }
                 }
@@ -279,7 +249,7 @@ public class ManagerCRUD {
                 case 0 -> {
                     return;
                 }
-                default ->  System.out.println("invalid input !");
+                default -> CliUi.warning("Invalid option!");
             }
         }
     }

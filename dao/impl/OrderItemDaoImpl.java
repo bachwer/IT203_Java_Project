@@ -91,6 +91,21 @@ public class OrderItemDaoImpl implements OrderItemDao {
         }
     }
 
+    @Override
+    public long countByMenuItemId(int menuItemId) throws SQLException {
+        String sql = "SELECT COUNT(*) AS count FROM orderItem WHERE menuItemId = ?";
+        try (Connection connection = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, menuItemId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getLong("count");
+                }
+            }
+        }
+        return 0;
+    }
+
 
     private OrderItem map(ResultSet rs) throws SQLException {
         OrderItem item = new OrderItem(

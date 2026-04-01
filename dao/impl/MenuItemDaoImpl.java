@@ -19,6 +19,8 @@ public class MenuItemDaoImpl implements MenuItemDao {
         try(Connection connection = DBConnection.getInstance().getConnection();
             PreparedStatement ps =connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
         ){
+
+
             ps.setString(1, menuItem.getName());
             ps.setBigDecimal(2, menuItem.getPrice());
             ps.setString(3, menuItem.getType());
@@ -51,7 +53,7 @@ public class MenuItemDaoImpl implements MenuItemDao {
 
     @Override
     public boolean delete(int menuItemId) throws SQLException {
-        String sql = "DELETE from menu_item where id = ?";
+        String sql = "UPDATE menu_item SET status = 'DELETED' WHERE id = ?";
         try(Connection connection = DBConnection.getInstance().getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)){
             ps.setInt(1, menuItemId);
@@ -61,7 +63,7 @@ public class MenuItemDaoImpl implements MenuItemDao {
 
     @Override
     public Optional<MenuItem> findById(int menuItemId) throws SQLException {
-        String sql = "SELECT id, name, price, type, status FROM menu_item WHERE id = ?";
+        String sql = "SELECT id, name, price, type, status FROM menu_item WHERE id = ? AND status != 'DELETED'";
 
         try(Connection connection = DBConnection.getInstance().getConnection();
             PreparedStatement ps =connection.prepareStatement(sql)
@@ -78,7 +80,7 @@ public class MenuItemDaoImpl implements MenuItemDao {
 
     @Override
     public List<MenuItem> findAll() throws SQLException {
-        String sql = "SELECT id, name, price, type, status FROM menu_item ORDER BY id";
+        String sql = "SELECT id, name, price, type, status FROM menu_item WHERE status != 'DELETED' ORDER BY id";
         List<MenuItem> menuItems = new ArrayList<>();
         try (Connection connection = DBConnection.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql);
@@ -93,7 +95,7 @@ public class MenuItemDaoImpl implements MenuItemDao {
 
     @Override
     public List<MenuItem> searchByName(String name) throws SQLException {
-        String sql = "SELECT id, name, price, type, status FROM menu_item WHERE LOWER(name) LIKE LOWER(?) ORDER BY id";
+        String sql = "SELECT id, name, price, type, status FROM menu_item WHERE LOWER(name) LIKE LOWER(?) AND status != 'DELETED' ORDER BY id";
         List<MenuItem> menuItems = new ArrayList<>();
         try (Connection connection = DBConnection.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)){

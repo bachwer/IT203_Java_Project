@@ -1,3 +1,3 @@
 package constance;
 
-public enum TableStatus {AVAILABLE, OCCUPIED}
+public enum TableStatus {AVAILABLE, OCCUPIED, DELETED}

@@ -13,11 +13,14 @@ import service.impl.OrderService;
 import service.impl.ReviewService;
 import service.impl.TableService;
 import util.CliTable;
+import util.CliUi;
+import util.InputValidator;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 
 public class CustomerMenu {
@@ -32,24 +35,25 @@ public class CustomerMenu {
         int choice;
 
         while(true){
-            System.out.println("=== Customer Menu - " + user.getUserName() + " ===");
-            System.out.println("1. View Menu");
-            System.out.println("2. Choose Table & Create Order");
-            System.out.println("3. Add Item to Current Order");
-            System.out.println("4. Remove Item from Current Order");
-            System.out.println("5. View Current Order");
-            System.out.println("6. Order History");
-            System.out.println("7. Checkout Current Order");
-            System.out.println("8. Add Review");
-            System.out.println("0. Logout");
+            CliUi.printMenu("CUSTOMER MENU - " + user.getUserName(), List.of(
+                    "1. View Menu",
+                    "2. Choose Table & Create Order",
+                    "3. Add Item to Current Order",
+                    "4. Remove Item from Current Order",
+                    "5. View Current Order",
+                    "6. Order History",
+                    "7. Checkout Current Order",
+                    "8. Add Review",
+                    "0. Logout"
+            ));
 
 
-            try {
-                choice = Integer.parseInt(input.nextLine());
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid input! Please enter a number.");
+            Integer selected = InputValidator.readInt(input, "Select option: ");
+            if (selected == null) {
+                CliUi.error("Invalid input! Please enter a number.");
                 continue;
             }
+            choice = selected;
 
             switch(choice){
                 case 1 -> {
@@ -61,32 +65,27 @@ public class CustomerMenu {
                 }
                 case 2 -> {
                     if (orderService.getCurrentOrderByUser(user.getId()).isPresent()) {
-                        System.out.println("You already have a current order. Please checkout first.");
+                        CliUi.warning("You already have a current order. Please checkout first.");
                         continue;
                     }
 
-                    System.out.print("====Choose table ==== ");
                     List<String[]> rows = tableService.getAll().stream()
                             .filter(item -> item.getStatus() == TableStatus.AVAILABLE)
                             .map(item -> item.toTableRow())
                             .toList();
                     CliTable.print("AVAILABLE TABLES", Table.tableHeaders(), rows, 3);
 
-                    System.out.println("Enter id table: ");
-                    int idTable;
-
-                    try {
-                        idTable = Integer.parseInt(input.nextLine());
-                    } catch (NumberFormatException e) {
-                        System.out.println("Invalid input! Please enter a number.");
+                    Integer idTable = InputValidator.readInt(input, "Enter table ID: ");
+                    if (idTable == null || idTable <= 0) {
+                        CliUi.warning("Invalid input! Please enter a positive number.");
                         continue;
                     }
 
                     try {
                         orderService.create(user.getId(), idTable);
-                        System.out.println("Order created successfully.");
+                        CliUi.success("Order created successfully.");
                     } catch (IllegalStateException e) {
-                        System.out.println(e.getMessage());
+                        CliUi.error(e.getMessage());
                     }
 
                 }
@@ -94,64 +93,59 @@ public class CustomerMenu {
                     var currentOrder = orderService.getCurrentOrderByUser(user.getId());
 
                     if (currentOrder.isEmpty()) {
-                        System.out.println("You don't have an active order. Please create one first.");
+                        CliUi.warning("You don't have an active order. Please create one first.");
                         continue;
                     }
 
                     var order = currentOrder.get();
 
-                    System.out.print("Enter menu item id: ");
-                    int menuItemId;
-                    try {
-                        menuItemId = Integer.parseInt(input.nextLine());
-                    } catch (NumberFormatException e) {
-                        System.out.println("Invalid input!");
+                    Integer menuItemId = InputValidator.readInt(input, "Enter menu item ID: ");
+                    if (menuItemId == null || menuItemId <= 0) {
+                        CliUi.warning("Invalid menu item ID!");
                         continue;
                     }
 
-                    System.out.print("Enter quantity: ");
-                    int quantity;
-                    try {
-                        quantity = Integer.parseInt(input.nextLine());
-                    } catch (NumberFormatException e) {
-                        System.out.println("Invalid input!");
+                    Integer quantity = InputValidator.readInt(input, "Enter quantity: ");
+                    if (quantity == null || quantity <= 0) {
+                        CliUi.warning("Quantity must be greater than 0.");
                         continue;
                     }
 
                     orderService.addOrderItem(order.getId(), menuItemId, quantity);
-                    System.out.println("Item added successfully.");
+                    CliUi.success("Item added successfully.");
                 }
                 case 4 -> {
                     var currentOrder = orderService.getCurrentOrderByUser(user.getId());
                     if (currentOrder.isEmpty()) {
-                        System.out.println("No current order. Please create one first.");
+                        CliUi.warning("No current order. Please create one first.");
                         continue;
                     }
 
-                    System.out.print("Enter order item id to remove: ");
-                    int orderItemId;
-                    try {
-                        orderItemId = Integer.parseInt(input.nextLine());
-                    } catch (NumberFormatException e) {
-                        System.out.println("Invalid input!");
+                    Integer orderItemId = InputValidator.readInt(input, "Enter order item ID to remove: ");
+                    if (orderItemId == null || orderItemId <= 0) {
+                        CliUi.warning("Invalid order item ID!");
                         continue;
                     }
 
                     boolean belongsToCurrentOrder = orderService.getOrderItems(currentOrder.get().getId()).stream()
                             .anyMatch(item -> item.getId() == orderItemId);
                     if (!belongsToCurrentOrder) {
-                        System.out.println("Order item does not belong to your current order.");
+                        CliUi.warning("Order item does not belong to your current order.");
                         continue;
                     }
 
                     boolean removed = orderService.removePendingOrderItem(orderItemId);
-                    System.out.println(removed ? "Removed successfully." : "Cannot remove item.");
+                    if (removed) {
+                        CliUi.success("Removed successfully.");
+                    } else {
+                        CliUi.warning("Cannot remove item.");
+                    }
                 }
 
                 case 5 -> {
                     var currentOrder = orderService.getCurrentOrderByUser(user.getId());
                     if (currentOrder.isEmpty()) {
-                        System.out.println("No current order. Please create one first.");
+                        CliUi.warning("No current order. Please create one first.");
                         continue;
                     }
 
@@ -159,7 +153,7 @@ public class CustomerMenu {
                             .map(OrderItem::toTableRow)
                             .toList();
                     if (rows.isEmpty()) {
-                        System.out.println("Current order has no items yet.");
+                        CliUi.info("Current order has no items yet.");
                         continue;
                     }
                     CliTable.print("CURRENT ORDER ITEMS", OrderItem.tableHeaders(), rows, 5);
@@ -175,7 +169,7 @@ public class CustomerMenu {
                 case 7 -> {
                     var currentOrder = orderService.getCurrentOrderByUser(user.getId());
                     if (currentOrder.isEmpty()) {
-                        System.out.println("No current order. Please create one first.");
+                        CliUi.warning("No current order. Please create one first.");
                         continue;
                     }
 
@@ -183,7 +177,7 @@ public class CustomerMenu {
 
                     List<OrderItem> orderItems = orderService.getOrderItems(orderId);
                     if (orderItems.isEmpty()) {
-                        System.out.println("Cannot checkout. Current order has no items.");
+                        CliUi.warning("Cannot checkout. Current order has no items.");
                         continue;
                     }
 
@@ -191,7 +185,7 @@ public class CustomerMenu {
                             item.getStatus() == OrderStatusItem.PENDING || item.getStatus() == OrderStatusItem.PROCESSING);
 
                     if (hasNotReadyItem) {
-                        System.out.println("Cannot checkout. Some items are not completed yet.");
+                        CliUi.warning("Cannot checkout. Some items are not completed yet.");
                         continue;
                     }
 
@@ -219,54 +213,53 @@ public class CustomerMenu {
                             billRows,
                             5
                     );
-                    System.out.println("Total Amount: " + totalAmount.setScale(2, RoundingMode.HALF_UP).toPlainString());
-                    System.out.print("Confirm payment? (Y/N): ");
-                    String confirm = input.nextLine().trim();
+                    CliUi.info("Total Amount: " + totalAmount.setScale(2, RoundingMode.HALF_UP).toPlainString());
+                    String confirm = InputValidator.readNonBlank(input, "Confirm payment? (Y/N): ");
 
-                    if (!confirm.equalsIgnoreCase("Y")) {
-                        System.out.println("Payment cancelled.");
+                    if (!InputValidator.isYes(confirm)) {
+                        CliUi.info("Payment cancelled.");
                         continue;
                     }
 
                     orderService.saveOrderTotal(orderId, totalAmount.setScale(2, RoundingMode.HALF_UP));
                     orderService.approveOrder(orderId);
-                    System.out.println("Order approved (checkout successful).");
+                    CliUi.success("Checkout successful.");
                 }
 
                 case 8 -> {
-                    System.out.print("Enter rating (1-5): ");
-                    int rating;
-                    try {
-                        rating = Integer.parseInt(input.nextLine());
-                    } catch (NumberFormatException e) {
-                        System.out.println("Invalid input!");
+                    Integer rating = InputValidator.readInt(input, "Enter rating (1-5): ");
+                    if (rating == null) {
+                        CliUi.warning("Invalid rating!");
                         continue;
                     }
 
-                    if (rating < 1 || rating > 5) {
-                        System.out.println("Rating must be between 1 and 5.");
+                    if (!InputValidator.isRatingValid(rating)) {
+                        CliUi.warning("Rating must be between 1 and 5.");
                         continue;
                     }
 
-                    System.out.print("Enter comment: ");
-                    String comment = input.nextLine().trim();
+                    String comment = InputValidator.readNonBlank(input, "Enter comment: ");
 
-                    if (comment.isEmpty()) {
-                        System.out.println("Comment cannot be empty.");
+                    if (comment == null) {
+                        CliUi.warning("Comment cannot be empty.");
                         continue;
                     }
 
                     try {
                         reviewService.addReview(user.getId(), rating, comment);
-                        System.out.println("Review added successfully.");
+                        CliUi.success("Review added successfully.");
                     } catch (Exception e) {
-                        System.out.println("Failed to add review: " + e.getMessage());
+                        CliUi.error("Failed to add review: " + e.getMessage());
                     }
                 }
 
 
 
-                case 0 -> {return;}
+                case 0 -> {
+                    CliUi.info("Logout customer account.");
+                    return;
+                }
+                default -> CliUi.warning("Invalid option!");
             }
         }
 

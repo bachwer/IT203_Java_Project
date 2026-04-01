@@ -1,10 +1,15 @@
 package controller;
 
+import util.CliUi;
+
+import java.util.List;
+
 public class MainMenu {
     public void menu() {
-        System.out.println("=== Restaurant Management ===");
-        System.out.println("1. Register (Customer)");
-        System.out.println("2. Login");
-        System.out.println("0. Exit");
+        CliUi.printMenu("RESTAURANT MANAGEMENT", List.of(
+                "1. Register (Customer)",
+                "2. Login",
+                "0. Exit"
+        ));
     }
 }

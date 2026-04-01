@@ -50,7 +50,7 @@ public class TableDaoImpl implements TableDao {
 
     @Override
     public boolean delete(int tableId) throws SQLException {
-        String sql = "DELETE FROM tableRs WHERE id = ?";
+        String sql = "UPDATE tableRs SET status = 'DELETED' WHERE id = ?";
         try (Connection connection = DBConnection.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)
         ) {
@@ -61,7 +61,7 @@ public class TableDaoImpl implements TableDao {
 
     @Override
     public Optional<Table> findById(int tableId) throws SQLException {
-        String sql = "SELECT * FROM tableRs WHERE id = ?";
+        String sql = "SELECT * FROM tableRs WHERE id = ? AND status != 'DELETED'";
         try (Connection connection = DBConnection.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)
         ) {
@@ -79,7 +79,7 @@ public class TableDaoImpl implements TableDao {
 
     @Override
     public List<Table> findAll() throws SQLException {
-        String sql = "SELECT * FROM tableRs";
+        String sql = "SELECT * FROM tableRs WHERE status != 'DELETED'";
         List<Table> list = new ArrayList<>();
 
         try (Connection connection = DBConnection.getInstance().getConnection();

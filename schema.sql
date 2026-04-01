@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS users (
     UNIQUE KEY uk_users_name (name)
 );
 
+select  * from users;
 INSERT IGNORE INTO users(name, password, role)
 VALUES ('admin', '$2a$10$3f2.e61.HJDDjKZyYWGCvevWj3.QnmAIPMyXdpK3iHGouReUpG5Ka', 'MANAGER');
 
@@ -68,3 +69,17 @@ CREATE TABLE IF NOT EXISTS review (
     FOREIGN KEY (userId) REFERENCES users(id)
 );
 
+
+ALTER TABLE orderItem
+    MODIFY status ENUM('PENDING', 'PROCESSING', 'COMPLETED', 'CANCELLED', 'DELETED')
+        NOT NULL DEFAULT 'PENDING';
+
+ALTER TABLE tableRs
+    MODIFY status ENUM('AVAILABLE', 'OCCUPIED', 'DELETED')
+        NOT NULL DEFAULT 'AVAILABLE';
+
+ALTER TABLE menu_item
+    MODIFY status ENUM('AVAILABLE', 'DISABLED', 'OUT_OF_STOCK', 'DELETED')
+        NOT NULL DEFAULT 'AVAILABLE';
+
+select * from tableRs;

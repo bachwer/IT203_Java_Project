@@ -4,6 +4,7 @@ import dao.MenuItemDao;
 import dao.impl.MenuItemDaoImpl;
 import model.MenuItem;
 import service.MenuInterface;
+import util.CliUi;
 import util.InputValidator;
 
 import java.sql.SQLException;
@@ -13,6 +14,7 @@ import java.util.Optional;
 
 public class MenuService implements MenuInterface {
     private final MenuItemDao menuItemDao = new MenuItemDaoImpl();
+
     @Override
     public int create(MenuItem menuItem){
         try {
@@ -46,6 +48,7 @@ public class MenuService implements MenuInterface {
             if (!menuItemDao.delete(menuItemId)) {
                 throw new IllegalArgumentException("Menu item not found.");
             }
+            CliUi.info("Menu item deleted (soft delete).");
         } catch (Exception e) {
             throw new IllegalStateException("Cannot delete menu item: " + e.getMessage(), e);
         }

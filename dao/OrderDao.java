@@ -18,4 +18,5 @@ public interface OrderDao {
     boolean updateTotal(int orderId, BigDecimal total) throws SQLException;
     BigDecimal getTotalRevenue() throws SQLException;
     int countCheckedOutOrders() throws SQLException;
+    long countByTableId(int tableId) throws SQLException;
 }

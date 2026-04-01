@@ -23,6 +23,22 @@ public final class CliColor {
         return wrap(text, BOLD + YELLOW);
     }
 
+    public static String info(String text) {
+        return wrap(text, CYAN);
+    }
+
+    public static String success(String text) {
+        return wrap(text, GREEN);
+    }
+
+    public static String warning(String text) {
+        return wrap(text, YELLOW);
+    }
+
+    public static String error(String text) {
+        return wrap(text, RED);
+    }
+
     public static String byStatus(String text) {
         if (text == null) {
             return "";
@@ -52,7 +68,14 @@ public final class CliColor {
     }
 
     private static boolean isEnabled() {
-        return System.console() != null && System.getenv("NO_COLOR") == null;
+        if (System.getenv("NO_COLOR") != null) {
+            return false;
+        }
+        String term = System.getenv("TERM");
+        if (term == null || term.equalsIgnoreCase("dumb")) {
+            return System.console() != null;
+        }
+        return true;
     }
 }
 

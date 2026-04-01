@@ -16,6 +16,7 @@ public class User {
 
 
     public User(int id, String userName, String password, Role role, UserStatus status) {
+        this.id = id;
         this.userName = userName;
         this.password = password;
         this.role = role;
@@ -68,5 +69,18 @@ public class User {
 
     public UserStatus getStatus() {
         return status;
+    }
+
+    public static String[] tableHeaders() {
+        return new String[]{"ID", "Username", "Role", "Status"};
+    }
+
+    public String[] toTableRow() {
+        return new String[]{
+                String.valueOf(id),
+                userName,
+                role.name(),
+                status.name()
+        };
     }
 }

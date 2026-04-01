@@ -155,6 +155,20 @@ public class OrderDaoImpl implements OrderDao {
         return 0;
     }
 
+    @Override
+    public long countByTableId(int tableId) throws SQLException {
+        String sql = "SELECT COUNT(*) AS count FROM orders WHERE tableId = ?";
+        try (Connection connection = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, tableId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getLong("count");
+                }
+            }
+        }
+        return 0;
+    }
 
     private Order map(ResultSet rs) throws SQLException{
         Timestamp createdAt = rs.getTimestamp("createdAt");
